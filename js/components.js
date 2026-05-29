@@ -59,9 +59,9 @@ export function renderProductCard(producto, onAddToCart) {
 
     let badgeHTML = '';
     if (isOutOfStock) {
-        badgeHTML = `<span class="stock-badge critico product-card-badge">Agotado</span>`;
+        badgeHTML = `<span class="stock-badge critico product-card-badge" style="background: rgba(255, 230, 230, 0.95); color: #800000; border: 1.5px solid #800000; font-weight: 800; font-size: 0.75rem;">Agotado</span>`;
     } else if (isLowStock) {
-        badgeHTML = `<span class="stock-badge critico product-card-badge">Pocas Unidades</span>`;
+        badgeHTML = `<span class="stock-badge critico product-card-badge" style="background: rgba(255, 230, 230, 0.95); color: #800000; border: 1.5px solid #800000; font-weight: 800; font-size: 0.75rem;">Pocas Unidades</span>`;
     }
 
     const buttonStyle = isOutOfStock 

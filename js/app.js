@@ -401,8 +401,7 @@ function filtrarCatalogo() {
 
 function agregarAlCarrito(producto) {
     if (!AppState.user) {
-        ui.showToast('Debes iniciar sesión para realizar pedidos', 'warning');
-        window.location.href = 'login.html';
+        window.location.href = 'login.html?auth_required=true';
         return;
     }
 
@@ -523,6 +522,10 @@ async function procesarCompra() {
             // Recargar productos para refrescar stock en la pantalla
             await cargarProductos();
             renderCatalogo();
+            
+            // Restaurar el botón de checkout de forma exitosa
+            checkoutBtn.disabled = false;
+            checkoutBtn.querySelector('span').textContent = "Confirmar Pedido";
             
             // Redirigir a sus pedidos
             switchView('orders');

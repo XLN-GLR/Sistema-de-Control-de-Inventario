@@ -13,6 +13,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Verificar si se redirigió por intentar agregar productos sin iniciar sesión
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auth_required') === 'true') {
+        // Un pequeño retraso para asegurar que el DOM y los estilos estén completamente cargados
+        setTimeout(() => {
+            showToast('Debes iniciar sesión para agregar productos al carrito', 'warning');
+        }, 150);
+    }
+
     const loginForm = document.getElementById('login-form');
     loginForm.addEventListener('submit', handleLoginSubmit);
 
