@@ -2,8 +2,8 @@
    LÓGICA PRINCIPAL DE LA APLICACIÓN (SPA CONTROLLER)
    ==================================================================== */
 
-import * as api from './supabase-api.js?v=1.0.6';
-import * as ui from './components.js?v=1.0.6';
+import * as api from './supabase-api.js?v=1.0.7';
+import * as ui from './components.js?v=1.0.7';
 
 // Estado global de la aplicación (State Management)
 const AppState = {
@@ -831,7 +831,7 @@ async function cambiarEstado(id, nuevoEstado) {
     if (estadoDb === 'cancelado') {
         const confirmado = await ui.showConfirm(
             'Cancelar Pedido',
-            '¿Estás seguro de que deseas cancelar este pedido? Esto devolverá automáticamente todo el stock de los productos al inventario.',
+            '¿Estás seguro de que deseas cancelar este pedido?',
             'Cancelar Pedido',
             'Volver',
             true
@@ -853,7 +853,8 @@ async function cambiarEstado(id, nuevoEstado) {
     if (errUpdate) {
         ui.showToast(`Error al actualizar estado: ${errUpdate}`, 'danger');
     } else {
-        ui.showToast(`Pedido actualizado a ${estadoDb.toUpperCase()} con éxito.`, 'success');
+        const mensajeToast = estadoDb === 'cancelado' ? 'Pedido cancelado con éxito.' : 'Pedido completado con éxito.';
+        ui.showToast(mensajeToast, 'success');
         
         // Cerrar el modal de detalles si está abierto
         const modal = document.getElementById('modal-order-details');
