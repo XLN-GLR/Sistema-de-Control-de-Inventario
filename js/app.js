@@ -2,8 +2,8 @@
    LÓGICA PRINCIPAL DE LA APLICACIÓN (SPA CONTROLLER)
    ==================================================================== */
 
-import * as api from './supabase-api.js?v=1.0.3';
-import * as ui from './components.js?v=1.0.3';
+import * as api from './supabase-api.js?v=1.0.4';
+import * as ui from './components.js?v=1.0.4';
 
 // Estado global de la aplicación (State Management)
 const AppState = {
@@ -784,7 +784,15 @@ function renderPedidos() {
     const isAdmin = AppState.profile?.rol === 'admin';
 
     pedidosFiltrados.forEach(pedido => {
-        const orderCard = ui.renderOrderCard(pedido, isAdmin, abrirDetallesPedido);
+        // Renderizar tarjeta pasando callbacks globales para acciones rápidas
+        const orderCard = ui.renderOrderCard(
+            pedido, 
+            isAdmin, 
+            abrirDetallesPedido,
+            (id) => cambiarEstado(id, 'cancelado'),
+            (id) => cambiarEstado(id, 'completado'),
+            (id) => eliminarPedido(id)
+        );
         ordersList.appendChild(orderCard);
     });
 
@@ -795,6 +803,67 @@ function renderPedidos() {
 
 function filtrarPedidos() {
     renderPedidos();
+}
+
+/**
+ * Cambia el estado de un pedido en la base de datos (con confirmación de seguridad).
+ */
+async function cambiarEstado(id, nuevoEstado) {
+    const estadoDb = nuevoEstado === 'completated' ? 'completado' : nuevoEstado;
+    
+    // Diálogos de confirmación para evitar clics accidentales
+    if (estadoDb === 'cancelado') {
+        if (!confirm('¿Estás seguro de que deseas cancelar este pedido? Esto devolverá automáticamente el stock de los productos al inventario.')) {
+            return;
+        }
+    } else if (estadoDb === 'completado') {
+        if (!confirm('¿Estás seguro de que deseas marcar este pedido como COMPLETADO?')) {
+            return;
+        }
+    }
+    
+    const { data, error: errUpdate } = await api.updateEstadoPedido(id, estadoDb);
+    
+    if (errUpdate) {
+        ui.showToast(`Error al actualizar estado: ${errUpdate}`, 'danger');
+    } else {
+        ui.showToast(`Pedido actualizado a ${estadoDb.toUpperCase()} con éxito.`, 'success');
+        
+        // Cerrar el modal de detalles si está abierto
+        const modal = document.getElementById('modal-order-details');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+        
+        // Recargar pedidos e inventario de forma asíncrona
+        await cargarPedidos();
+        await cargarProductos();
+        cargarEstadisticasAdmin();
+        renderInventario();
+    }
+}
+
+/**
+ * Elimina físicamente un pedido de la base de datos (con confirmación de seguridad).
+ */
+async function eliminarPedido(id) {
+    if (confirm('¿Estás seguro de que deseas eliminar permanentemente este registro de pedido de la base de datos? Esta acción es irreversible.')) {
+        const { error } = await api.deletePedido(id);
+        if (error) {
+            ui.showToast(`Error al eliminar pedido: ${error}`, 'danger');
+        } else {
+            ui.showToast('Pedido eliminado permanentemente de la base de datos.', 'success');
+            
+            // Cerrar el modal de detalles si está abierto
+            const modal = document.getElementById('modal-order-details');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+            
+            // Recargar listados
+            await cargarPedidos();
+        }
+    }
 }
 
 /**
@@ -890,40 +959,6 @@ async function abrirDetallesPedido(pedido) {
     } else {
         footer.innerHTML = `<button class="btn btn-secondary btn-sm close-modal-btn">Cerrar</button>`;
         footer.querySelector('.close-modal-btn').addEventListener('click', () => modal.classList.remove('active'));
-    }
-
-    async function cambiarEstado(id, nuevoEstado) {
-        const estadoDb = nuevoEstado === 'completated' ? 'completado' : nuevoEstado;
-        
-        const { data, error: errUpdate } = await api.updateEstadoPedido(id, estadoDb);
-        
-        if (errUpdate) {
-            ui.showToast(`Error al actualizar estado: ${errUpdate}`, 'danger');
-        } else {
-            ui.showToast(`Pedido actualizado a ${estadoDb.toUpperCase()} con éxito.`, 'success');
-            modal.classList.remove('active');
-            
-            // Recargar pedidos e inventario
-            await cargarPedidos();
-            await cargarProductos();
-            cargarEstadisticasAdmin();
-            renderInventario();
-        }
-    }
-
-    async function eliminarPedido(id) {
-        if (confirm('¿Estás seguro de que deseas eliminar permanentemente este registro de pedido de la base de datos? Esta acción es irreversible.')) {
-            const { error } = await api.deletePedido(id);
-            if (error) {
-                ui.showToast(`Error al eliminar pedido: ${error}`, 'danger');
-            } else {
-                ui.showToast('Pedido eliminado permanentemente de la base de datos.', 'success');
-                modal.classList.remove('active');
-                
-                // Recargar listados
-                await cargarPedidos();
-            }
-        }
     }
 
     if (window.lucide) {

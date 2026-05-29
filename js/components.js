@@ -181,7 +181,7 @@ export function renderCartItem(item, onIncrease, onDecrease, onRemove) {
 /**
  * Renderiza una tarjeta resumen de pedido en el historial.
  */
-export function renderOrderCard(pedido, isAdmin, onViewDetails) {
+export function renderOrderCard(pedido, isAdmin, onViewDetails, onCancelar, onCompletar, onEliminar) {
     const card = document.createElement('div');
     card.className = 'order-row-card';
 
@@ -215,6 +215,41 @@ export function renderOrderCard(pedido, isAdmin, onViewDetails) {
         `;
     }
 
+    let actionsHTML = `
+        <button class="btn btn-secondary btn-sm view-details-btn">
+            <i data-lucide="eye" style="width: 14px; height: 14px; margin-right: 4px;"></i>
+            <span>Ver Detalles</span>
+        </button>
+    `;
+
+    if (pedido.estado === 'pendiente') {
+        // Botón Cancelar (clientes y administradores)
+        actionsHTML += `
+            <button class="btn btn-sm cancel-btn" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; margin-left: 0.5rem; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+                <i data-lucide="x-circle" style="width: 14px; height: 14px;"></i>
+                <span>Cancelar</span>
+            </button>
+        `;
+
+        if (isAdmin) {
+            // Botón Completar (solo administradores)
+            actionsHTML += `
+                <button class="btn btn-sm complete-btn" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: #a7f3d0; margin-left: 0.5rem; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+                    <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+                    <span>Completar</span>
+                </button>
+            `;
+        }
+    } else if (isAdmin && (pedido.estado === 'completado' || pedido.estado === 'cancelado')) {
+        // Botón Eliminar Registro (solo administradores para pedidos finalizados)
+        actionsHTML += `
+            <button class="btn btn-sm delete-btn" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; margin-left: 0.5rem; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                <span>Eliminar</span>
+            </button>
+        `;
+    }
+
     card.innerHTML = `
         ${metaHTML}
         
@@ -223,15 +258,36 @@ export function renderOrderCard(pedido, isAdmin, onViewDetails) {
             <span class="order-status ${pedido.estado}">${pedido.estado.toUpperCase()}</span>
         </div>
         
-        <div class="order-actions">
-            <button class="btn btn-secondary btn-sm view-details-btn">
-                <i data-lucide="eye"></i>
-                <span>Ver Detalles</span>
-            </button>
+        <div class="order-actions" style="display: flex; align-items: center; gap: 0.25rem;">
+            ${actionsHTML}
         </div>
     `;
 
     card.querySelector('.view-details-btn').addEventListener('click', () => onViewDetails(pedido));
+
+    const cancelBtn = card.querySelector('.cancel-btn');
+    if (cancelBtn && onCancelar) {
+        cancelBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            onCancelar(pedido.id);
+        });
+    }
+
+    const completeBtn = card.querySelector('.complete-btn');
+    if (completeBtn && onCompletar) {
+        completeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            onCompletar(pedido.id);
+        });
+    }
+
+    const deleteBtn = card.querySelector('.delete-btn');
+    if (deleteBtn && onEliminar) {
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            onEliminar(pedido.id);
+        });
+    }
 
     return card;
 }
