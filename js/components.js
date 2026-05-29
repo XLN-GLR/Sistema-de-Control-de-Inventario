@@ -57,10 +57,14 @@ export function renderProductCard(producto, onAddToCart) {
 
     let badgeHTML = '';
     if (isOutOfStock) {
-        badgeHTML = `<span class="stock-badge critico product-card-badge">Agotado</span>`;
+        badgeHTML = `<span class="stock-badge critico product-card-badge" style="background: rgba(255, 235, 235, 0.92); color: #990000; border: 1px solid #990000; font-weight: 800; font-size: 0.75rem;">Agotado</span>`;
     } else if (isLowStock) {
-        badgeHTML = `<span class="stock-badge critico product-card-badge" style="background: var(--color-danger-bg); color: #ff8b80; border: 1px solid var(--color-danger);">Pocas Unidades</span>`;
+        badgeHTML = `<span class="stock-badge critico product-card-badge" style="background: rgba(255, 235, 235, 0.92); color: #990000; border: 1px solid #990000; font-weight: 800; font-size: 0.75rem;">Pocas Unidades</span>`;
     }
+
+    const buttonStyle = isOutOfStock 
+        ? 'background: transparent; border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text-muted); opacity: 0.4; cursor: not-allowed; box-shadow: none; pointer-events: none;' 
+        : '';
 
     card.innerHTML = `
         <div class="product-card-img-container">
@@ -72,7 +76,7 @@ export function renderProductCard(producto, onAddToCart) {
             <h4 class="product-card-title">${producto.nombre}</h4>
             <div class="product-card-footer">
                 <span class="product-card-price">$${Number(producto.precio).toFixed(2)}</span>
-                <button class="btn btn-primary btn-sm add-to-cart-btn" ${isOutOfStock ? 'disabled' : ''}>
+                <button class="btn btn-primary btn-sm add-to-cart-btn" ${isOutOfStock ? 'disabled' : ''} style="${buttonStyle}">
                     <i data-lucide="shopping-cart"></i>
                     <span>${isOutOfStock ? 'Sin Stock' : 'Agregar'}</span>
                 </button>
