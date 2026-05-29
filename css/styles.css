@@ -5,32 +5,32 @@
 /* Importación de tipografías modernas de Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
-/* Variables de Diseño (Design Tokens) */
+/* Variables de Diseño (Design Tokens - Temática Gris Pizarra Mate y Tonos Suaves) */
 :root {
-    /* Paleta de colores */
-    --bg-main: #0b0f19;
-    --bg-card: rgba(17, 24, 39, 0.7);
-    --bg-card-hover: rgba(31, 41, 55, 0.8);
-    --border-color: rgba(255, 255, 255, 0.08);
-    --border-focus: rgba(99, 102, 241, 0.4);
+    /* Paleta de colores solicitada por el usuario */
+    --bg-main: #0a0c10; /* Negro mate / Gris pizarra ultra oscuro */
+    --bg-card: #141822; /* Panel gris ligeramente más claro para relieve y separación estructural */
+    --bg-card-hover: #1b202d; /* Relieve superior en hover */
+    --border-color: rgba(255, 255, 255, 0.04); /* Borde translúcido sutil */
+    --border-focus: rgba(96, 165, 250, 0.4);
     
-    --color-primary: #6366f1; /* Índigo */
-    --color-primary-light: #818cf8;
-    --color-secondary: #0ea5e9; /* Celeste */
+    --color-primary: #60a5fa; /* Azul pastel suave (no agresivo, excelente contraste) */
+    --color-primary-light: #93c5fd;
+    --color-secondary: #34d399; /* Verde menta pastel */
     
-    --color-success: #10b981; /* Verde esmeralda */
-    --color-success-bg: rgba(16, 185, 129, 0.15);
+    --color-success: #34d399; /* Verde menta */
+    --color-success-bg: rgba(52, 211, 153, 0.12);
     
-    --color-danger: #ef4444; /* Rojo coral */
-    --color-danger-bg: rgba(239, 68, 68, 0.12);
-    --color-danger-glow: rgba(239, 68, 68, 0.4);
+    --color-danger: #ff3b30; /* Rojo coral intenso / neón (alerta inmediata al ojo) */
+    --color-danger-bg: rgba(255, 59, 48, 0.14); /* Resaltado llamativo en filas de stock crítico */
+    --color-danger-glow: rgba(255, 59, 48, 0.5);
     
-    --color-warning: #f59e0b; /* Ámbar */
-    --color-warning-bg: rgba(245, 158, 11, 0.15);
+    --color-warning: #fbbf24; /* Ámbar pastel */
+    --color-warning-bg: rgba(251, 191, 36, 0.12);
 
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --text-muted: #57657a;
     
     /* Fuentes */
     --font-heading: 'Outfit', sans-serif;
@@ -716,7 +716,7 @@ button, input, select, textarea {
 }
 
 .product-card-body {
-    padding: 1.25rem;
+    padding: 1.15rem; /* Ajuste sutil del padding para maximizar el espacio de los botones */
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -745,11 +745,14 @@ button, input, select, textarea {
     margin-top: auto;
     padding-top: 0.75rem;
     border-top: 1px solid rgba(255, 255, 255, 0.04);
-    gap: 1.25rem; /* Espaciado mínimo para que el precio no quede pegado al botón */
+    gap: 0.75rem; /* Espaciado ajustado para evitar que empuje el botón fuera del borde */
 }
 
 .product-card-footer .btn {
-    flex-shrink: 0; /* Previene que el botón se reduzca o colapse en pantallas pequeñas */
+    flex-shrink: 0; /* Previene que el botón se contraiga */
+    padding: 0.45rem 0.85rem; /* Padding más compacto en catálogo para un ajuste perfecto al recuadro */
+    font-size: 0.85rem;
+    border-radius: 8px; /* Bordes adaptados con elegancia */
 }
 
 .product-card-price {
