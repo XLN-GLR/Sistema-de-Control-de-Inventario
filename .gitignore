@@ -1,0 +1,11 @@
+# Archivos de sistema e IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Entorno de desarrollo
+.env
+.env.local
+.env.*.local

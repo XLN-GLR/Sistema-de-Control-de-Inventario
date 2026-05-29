@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockGuard - Control de Inventario y Alertas</title>
+    
+    <!-- Enlace a la hoja de estilos personalizada -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Iconos Lucide (Kit Ligero de Iconos de Alta Calidad) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <!-- Contenedor del Sistema de Notificaciones Toast -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="app-container">
+        
+        <!-- BARRA DE NAVEGACIÓN PREMIUM -->
+        <nav class="navbar">
+            <div class="nav-brand" id="nav-brand">
+                <div class="nav-brand-logo">SG</div>
+                <span class="nav-brand-text">StockGuard</span>
+            </div>
+            
+            <div class="nav-menu" id="nav-menu">
+                <!-- Se poblará dinámicamente según el estado del usuario -->
+            </div>
+            
+            <div class="user-menu" id="user-menu">
+                <!-- Se poblará dinámicamente con perfiles / botón de login -->
+            </div>
+        </nav>
+
+        <!-- ====================================================================
+             VISTA 1: INICIO DE SESIÓN / REGISTRO (auth-view)
+             ==================================================================== -->
+        <section id="view-auth" class="view-section view-section-auth auth-container">
+            <div class="card auth-card">
+                <div class="auth-header">
+                    <div class="auth-logo">
+                        <i data-lucide="shield-check"></i>
+                    </div>
+                    <h2 class="auth-title" id="auth-view-title">Iniciar Sesión</h2>
+                    <p class="auth-subtitle" id="auth-view-subtitle">Accede a la plataforma de inventario de Abarrotes</p>
+                </div>
+                
+                <form id="auth-form" autocomplete="off">
+                    <!-- Campo Nombre (Solo visible en registro) -->
+                    <div class="form-group" id="form-group-name" style="display: none;">
+                        <label class="form-label" for="auth-name">Nombre Completo</label>
+                        <div class="input-container">
+                            <input class="form-input" type="text" id="auth-name" placeholder="Ej. Maximiliano Giler">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="auth-email">Correo Electrónico</label>
+                        <div class="input-container">
+                            <input class="form-input" type="email" id="auth-email" required placeholder="correo@ejemplo.com">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="auth-password">Contraseña</label>
+                        <div class="input-container">
+                            <input class="form-input" type="password" id="auth-password" required placeholder="••••••••" minlength="6">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" id="auth-submit-btn">
+                        <span>Ingresar</span>
+                        <i data-lucide="arrow-right"></i>
+                    </button>
+                </form>
+                
+                <div class="auth-toggle-text">
+                    <span id="auth-toggle-msg">¿No tienes una cuenta?</span>
+                    <a class="auth-toggle-link" id="auth-toggle-link">Regístrate</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ====================================================================
+             VISTA 2: CATÁLOGO DE PRODUCTOS - CLIENTE (catalog-view)
+             ==================================================================== -->
+        <section id="view-catalog" class="view-section">
+            <div class="catalog-layout">
+                <!-- Sección Izquierda: Catálogo de Abarrotes -->
+                <div class="catalog-main">
+                    <div class="catalog-header">
+                        <div>
+                            <h2 style="font-size: 1.5rem; margin-bottom: 0.25rem;">Catálogo de Productos</h2>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem;">Encuentra y agrega productos a tu pedido</p>
+                        </div>
+                        
+                        <!-- Buscador y Categorías Híbridas -->
+                        <div class="filter-group">
+                            <div class="search-box">
+                                <input type="text" id="catalog-search" class="form-input" placeholder="Buscar por nombre...">
+                            </div>
+                            <select id="catalog-category-filter" class="form-select" style="width: auto;">
+                                <option value="">Todas las Categorías</option>
+                                <option value="Lácteos">Lácteos</option>
+                                <option value="Panadería">Panadería</option>
+                                <option value="Granos y Semillas">Granos y Semillas</option>
+                                <option value="Despensa">Despensa</option>
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Snacks">Snacks</option>
+                                <option value="Limpieza">Limpieza</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Grid de Tarjetas de Producto -->
+                    <div id="catalog-grid" class="catalog-grid">
+                        <!-- Renderizado dinámico de tarjetas -->
+                    </div>
+                </div>
+
+                <!-- Sección Derecha: Carrito de Compras -->
+                <aside class="catalog-sidebar">
+                    <div class="card cart-card">
+                        <h3 class="cart-title">
+                            <i data-lucide="shopping-cart"></i>
+                            <span>Mi Carrito</span>
+                        </h3>
+                        
+                        <div id="cart-items" class="cart-items-container">
+                            <!-- Items del carrito -->
+                        </div>
+                        
+                        <div class="cart-summary">
+                            <div class="cart-summary-row">
+                                <span>Productos:</span>
+                                <span id="cart-count-label">0</span>
+                            </div>
+                            <div class="cart-summary-row cart-summary-total">
+                                <span>Monto Total:</span>
+                                <span id="cart-total-label">$0.00</span>
+                            </div>
+                        </div>
+                        
+                        <button id="cart-checkout-btn" class="btn btn-primary" style="width: 100%;" disabled>
+                            <i data-lucide="check-circle"></i>
+                            <span>Confirmar Pedido</span>
+                        </button>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <!-- ====================================================================
+             VISTA 3: CONTROL DE INVENTARIO - ADMINISTRADOR (admin-view)
+             ==================================================================== -->
+        <section id="view-admin" class="view-section">
+            <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.6rem; margin-bottom: 0.25rem;">Panel de Administración de Inventario</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem;">Monitoreo en tiempo real, alertas de desabasto y gestión de stock</p>
+                </div>
+                <button id="admin-add-product-btn" class="btn btn-primary">
+                    <i data-lucide="plus"></i>
+                    <span>Nuevo Producto</span>
+                </button>
+            </div>
+
+            <!-- Grilla de Estadísticas con Alerta por Agotamiento -->
+            <div class="stats-grid">
+                <div class="card stat-card">
+                    <div class="stat-icon primary">
+                        <i data-lucide="package"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">Total Productos</div>
+                        <div id="stat-total-products" class="stat-value">0</div>
+                    </div>
+                </div>
+                
+                <div class="card stat-card">
+                    <div class="stat-icon success">
+                        <i data-lucide="dollar-sign"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">Valor del Inventario</div>
+                        <div id="stat-inventory-value" class="stat-value">$0.00</div>
+                    </div>
+                </div>
+
+                <div class="card stat-card" id="stat-alert-card">
+                    <div class="stat-icon danger">
+                        <i data-lucide="alert-triangle"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label" style="color: #fca5a5;">Stock por Agotarse</div>
+                        <div id="stat-critical-products" class="stat-value" style="color: var(--color-danger);">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buscador y Controles de Tabla -->
+            <div class="card" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+                <div class="table-controls">
+                    <div class="search-box">
+                        <input type="text" id="admin-search" class="form-input" placeholder="Buscar por nombre o código...">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <select id="admin-category-filter" class="form-select" style="width: auto;">
+                            <option value="">Todas las Categorías</option>
+                            <option value="Lácteos">Lácteos</option>
+                            <option value="Panadería">Panadería</option>
+                            <option value="Granos y Semillas">Granos y Semillas</option>
+                            <option value="Despensa">Despensa</option>
+                            <option value="Bebidas">Bebidas</option>
+                            <option value="Snacks">Snacks</option>
+                            <option value="Limpieza">Limpieza</option>
+                        </select>
+                        
+                        <select id="admin-stock-filter" class="form-select" style="width: auto;">
+                            <option value="todos">Todos los Niveles</option>
+                            <option value="critico">⚠️ Stock Crítico (Alertas)</option>
+                            <option value="suficiente">✅ Stock Suficiente</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tabla de Productos Responsiva (se convierte en tarjetas en móvil) -->
+                <div class="table-container">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Precio</th>
+                                <th>Stock Actual</th>
+                                <th>Stock Mínimo</th>
+                                <th>Código</th>
+                                <th style="text-align: right;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-inventory-table-body">
+                            <!-- Filas renderizadas dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ====================================================================
+             VISTA 4: PEDIDOS (orders-view)
+             ==================================================================== -->
+        <section id="view-orders" class="view-section">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 0.25rem;" id="orders-view-title">Historial de Pedidos</h2>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;" id="orders-view-subtitle">Consulta tus compras y estados de entrega</p>
+            </div>
+
+            <!-- Filtros de Pedidos -->
+            <div class="card" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+                <div class="table-controls">
+                    <div style="display: flex; gap: 0.75rem;">
+                        <select id="order-status-filter" class="form-select" style="width: auto;">
+                            <option value="todos">Todos los Estados</option>
+                            <option value="pendiente">Pendientes</option>
+                            <option value="completado">Completados</option>
+                            <option value="cancelado">Cancelados</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="orders-list" class="orders-grid">
+                    <!-- Lista de pedidos renderizada dinámicamente -->
+                </div>
+            </div>
+        </section>
+
+    </div> <!-- Fin de app-container -->
+
+    <!-- ====================================================================
+         MODAL 1: AGREGAR / EDITAR PRODUCTO (ADMINISTRADOR)
+         ==================================================================== -->
+    <div id="modal-product" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-product-title">Nuevo Producto</h3>
+                <button class="modal-close" id="modal-product-close">&times;</button>
+            </div>
+            
+            <form id="form-product">
+                <input type="hidden" id="prod-id">
+                
+                <div class="form-group">
+                    <label class="form-label" for="prod-name">Nombre del Producto</label>
+                    <input type="text" id="prod-name" class="form-input" required placeholder="Ej. Leche Semidescremada 1L">
+                </div>
+
+                <div class="form-group category-input-group">
+                    <label class="form-label" for="prod-category">Categoría</label>
+                    <input type="text" id="prod-category" class="form-input" required placeholder="Escribe o selecciona una categoría">
+                    
+                    <div class="category-suggested">
+                        <span class="category-chip" data-cat="Lácteos">Lácteos</span>
+                        <span class="category-chip" data-cat="Panadería">Panadería</span>
+                        <span class="category-chip" data-cat="Granos y Semillas">Granos y Semillas</span>
+                        <span class="category-chip" data-cat="Despensa">Despensa</span>
+                        <span class="category-chip" data-cat="Bebidas">Bebidas</span>
+                        <span class="category-chip" data-cat="Snacks">Snacks</span>
+                        <span class="category-chip" data-cat="Limpieza">Limpieza</span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="prod-price">Precio de Venta ($)</label>
+                        <input type="number" id="prod-price" class="form-input" required min="0.01" step="0.01" placeholder="Ej. 2.50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="prod-barcode">Código de Barras</label>
+                        <input type="text" id="prod-barcode" class="form-input" placeholder="Opcional">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="prod-stock">Stock Inicial</label>
+                        <input type="number" id="prod-stock" class="form-input" required min="0" placeholder="Ej. 20">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="prod-min-stock">Stock Mínimo Alerta</label>
+                        <input type="number" id="prod-min-stock" class="form-input" required min="0" placeholder="Ej. 5">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="prod-image">URL de la Imagen</label>
+                    <input type="url" id="prod-image" class="form-input" placeholder="Ej: https://images.unsplash.com/...">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="modal-product-cancel">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="modal-product-submit">Guardar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         MODAL 2: VER DETALLES DE PEDIDO
+         ==================================================================== -->
+    <div id="modal-order-details" class="modal-backdrop">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Detalles del Pedido</h3>
+                <button class="modal-close" id="modal-order-details-close">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
+                <div>
+                    <span style="color: var(--text-secondary); display: block; margin-bottom: 0.15rem;">ID de Pedido:</span>
+                    <strong id="det-order-id" style="font-family: var(--font-heading);"></strong>
+                </div>
+                <div>
+                    <span style="color: var(--text-secondary); display: block; margin-bottom: 0.15rem;">Fecha:</span>
+                    <strong id="det-order-date"></strong>
+                </div>
+                <div>
+                    <span style="color: var(--text-secondary); display: block; margin-bottom: 0.15rem;">Cliente:</span>
+                    <strong id="det-order-client"></strong>
+                </div>
+                <div>
+                    <span style="color: var(--text-secondary); display: block; margin-bottom: 0.15rem;">Estado:</span>
+                    <span id="det-order-status" class="order-status"></span>
+                </div>
+            </div>
+
+            <div class="table-container" style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.2);">
+                <table class="inventory-table" style="font-size: 0.85rem;">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th style="text-align: center;">Cantidad</th>
+                            <th style="text-align: right;">P. Unitario</th>
+                            <th style="text-align: right;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="det-order-items-body">
+                        <!-- Registros -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">
+                <span>Total del Pedido: &nbsp;</span>
+                <span id="det-order-total" style="color: var(--color-primary-light);">$0.00</span>
+            </div>
+
+            <div class="modal-footer" id="det-order-footer">
+                <!-- Se mostrarán botones para actualizar el estado del pedido si es admin -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         CARGA DE SCRIPTS Y SDK DE SUPABASE
+         ==================================================================== -->
+    <!-- Supabase JS Client v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Script principal de la aplicación -->
+    <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
