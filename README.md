@@ -2,7 +2,7 @@
 
 Un panel de administración y compras interactivo web (Dashboard) diseñado bajo estándares modernos de diseño visual, responsivo y multirol. Permite llevar el monitoreo del stock de productos, automatizar alertas de stock crítico por desabasto y facultar a los clientes a registrar pedidos que decrementan el inventario en tiempo real.
 
-Este proyecto ha sido optimizado para funcionar como una **SPA (Single Page Application)** estática y está completamente preparado para su despliegue autónomo en **GitHub Pages**, conectándose de forma directa y segura con **Supabase** como backend en la nube.
+Este proyecto ha sido optimizado para funcionar con una arquitectura híbrida integrada por una **SPA (Single Page Application)** estática para el catálogo y panel administrativo, y **páginas web independientes y despejadas** para el flujo de autenticación (Login y Registro). Está completamente preparado para su despliegue autónomo en **GitHub Pages**, conectándose de forma directa y segura con **Supabase** como backend en la nube.
 
 ---
 
@@ -25,8 +25,12 @@ El sistema funciona bajo una estructura cliente-servidor desacoplada que permite
 
 ```mermaid
 graph TD
-    A[Navegador del Usuario] -->|Consumo frontend SPA| B(HTML5 / CSS3 / JavaScript ES6)
-    B -->|SDK Cliente Seguro| C[Supabase Cloud REST API]
+    A[index.html - SPA Catálogo/Dashboard] -->|Redirección sin sesión| H[login.html - Login]
+    H -->|Enlace de registro| I[registro.html - Registro]
+    I -->|Retorno a login| H
+    H -->|Autenticación exitosa| A
+    A -->|Consumo frontend| B(JavaScript ES6 / Supabase SDK)
+    B -->|Peticiones HTTPS| C[Supabase Cloud REST API]
     
     subgraph Supabase Backend
         D[Supabase Auth] -->|Manejo de Autenticación| C
@@ -38,9 +42,9 @@ graph TD
 ```
 
 ### Flujo de Funcionamiento:
-1.  **Frontend (Capa de Presentación)**: Una SPA responsiva desarrollada en Vanilla HTML5, CSS3 Premium ( Glassmorphism, animaciones fluidas) y JavaScript modular (ES6+).
-2.  **Comunicación (Capa de Negocio)**: El SDK oficial de Supabase realiza peticiones HTTPS directas. Las variables de configuración de red se cargan dinámicamente desde `js/config.js`.
-3.  **Base de Datos (Capa de Persistencia)**: Almacenamiento PostgreSQL hospedado en Supabase Cloud. La seguridad de inserción/edición se gestiona a través de políticas **RLS (Row Level Security)** que restringen las acciones de los clientes. Un **trigger** interno a nivel de base de datos intercepta los nuevos registros de autenticación y les asigna su respectivo rol de perfil automáticamente.
+1.  **Frontend (Capa de Presentación)**: Una estructura limpia basada en una SPA responsiva para el panel administrativo y catálogo (`index.html`), junto con pantallas independientes, amplias y minimalistas de acceso (`login.html` y `registro.html`) desarrolladas en Vanilla HTML5, CSS3 Premium (Glassmorphism, animaciones fluidas) y JavaScript modular (ES6+).
+2.  **Comunicación (Capa de Negocio)**: El SDK oficial de Supabase realiza peticiones HTTPS directas. Las variables de configuración de red se cargan dinámicamente desde `js/config.js` y son consumidas de forma segura.
+3.  **Base de Datos (Capa de Persistencia)**: Almacenamiento PostgreSQL hospedado en Supabase Cloud. La seguridad de inserción/edición se gestiona a través de políticas **RLS (Row Level Security)** que restringen las acciones de los clientes. Un **trigger** interno a nivel de base de datos intercepta los nuevos registros de autenticación en la tabla de auth y les asigna su respectivo rol de perfil automáticamente en la tabla pública.
 
 ---
 
@@ -49,9 +53,9 @@ graph TD
 El proyecto está diseñado para ser ligero, sumamente rápido y sin necesidad de procesos de compilación pesados, usando tecnologías nativas modernas:
 
 *   **Frontend**:
-    *   **HTML5**: Estructura de layout, contenedores dinámicos para la SPA y ventanas modales de interacción.
+    *   **HTML5**: Estructura de layout, contenedores dinámicos para la SPA, páginas dedicadas e independientes de Login y Registro, y ventanas modales de interacción.
     *   **Vanilla CSS3 (Premium Style)**: Diseño visual con variables CSS personalizadas, sombras de resplandor (*glow*), transparencias con filtros de desenfoque de fondo (*Glassmorphism*), y transiciones fluidas de `cubic-bezier`. 
-    *   **JavaScript (ES6+)**: SPA con enrutamiento interno reactivo (sin recargas de página), manejo de estados (`AppState`), buscador híbrido en memoria, gestión interactiva de carrito de compras y notificaciones Toast flotantes en vivo.
+    *   **JavaScript (ES6+)**: SPA con enrutamiento interno reactivo (sin recargas de página) para el dashboard, controladores asíncronos independientes para los formularios de acceso, manejo de estados (`AppState`), buscador híbrido en memoria, gestión interactiva de carrito de compras y notificaciones Toast flotantes en vivo.
     *   **Iconos**: Biblioteca vectorizada ligera de **Lucide Icons** para dotar a la interfaz de iconos nítidos y adaptables.
 *   **Backend & Base de Datos**:
     *   **Supabase (BaaS)**: Infraestructura Cloud que provee servicios de bases de datos relacionales y gestión de sesiones de usuario (Auth).
