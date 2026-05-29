@@ -20,19 +20,26 @@ const AppState = {
 // ====================================================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Configurar escuchas de eventos principales en el DOM
+    // 1. Verificar sesión de forma asíncrona inmediata en Supabase Auth
+    // Si no hay usuario autenticado activo, redirigir de inmediato a login.html
+    const user = await api.getCurrentUser();
+    if (!user) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // 2. Si hay sesión activa, inicializar escuchas del DOM
     setupEventListeners();
 
-    // 2. Cargar productos inicialmente (Lectura pública) - IMPRESCINDIBLE CARGAR PRIMERO
-    // Esto resuelve el problema de carrera donde la UI se renderizaba vacía en el reinicio
+    // 3. Cargar productos inicialmente (Lectura segura tras autenticación)
     await cargarProductos();
 
-    // 3. Renderizar el catálogo inicial (para que los productos se vean de inmediato)
+    // 4. Renderizar catálogo inicial en pantalla
     renderCatalogo();
 
-    // 4. Escuchar cambios de estado en la autenticación de Supabase
+    // 5. Escuchar cambios futuros de estado en la autenticación de Supabase
     api.supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log("Cambio de estado Auth:", event);
+        console.log("Cambio de estado Auth en la SPA:", event);
         if (session && session.user) {
             AppState.user = session.user;
             
@@ -44,11 +51,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Forzar el rol de administrador para el correo específico indicado por el usuario
                 if (session.user.email === 'bjacnier28giler@gmail.com' && profile.rol !== 'admin') {
                     // Actualizar en base de datos para persistirlo
-                    await api.updateProducto(profile.id, { rol: 'admin' }); // profiles id es el mismo que user id
+                    await api.updateProducto(profile.id, { rol: 'admin' });
                     AppState.profile.rol = 'admin';
                 }
             } else {
-                // Si por alguna razón falla el perfil, creamos un fallback
+                // Fallback de seguridad para asignar rol
                 AppState.profile = {
                     rol: session.user.email === 'bjacnier28giler@gmail.com' ? 'admin' : 'cliente',
                     nombre: session.user.user_metadata?.nombre || 'Usuario'
@@ -56,23 +63,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             
             ui.showToast(`¡Bienvenido de nuevo, ${AppState.profile.nombre}!`, 'success');
+            
+            // Renderizar barra de navegación dinámica y cambiar vistas correspondientes
+            renderNavbar();
+            if (AppState.profile?.rol === 'admin') {
+                switchView('admin');
+            } else {
+                switchView('catalog');
+            }
         } else {
-            // Limpieza al cerrar sesión
+            // Si el usuario cierra sesión, limpiar estado y redirigir obligatoriamente a login.html
             AppState.user = null;
             AppState.profile = null;
             AppState.carrito = [];
             AppState.pedidos = [];
             actualizarContadorCarrito();
-        }
-
-        // Renderizar barra de navegación e inicializar vistas correspondientes
-        renderNavbar();
-        
-        // Si el usuario es admin, la vista inicial recomendada es el panel de administración
-        if (AppState.profile?.rol === 'admin') {
-            switchView('admin');
-        } else {
-            switchView('catalog');
+            window.location.href = 'login.html';
         }
     });
     

@@ -25,20 +25,21 @@ El sistema funciona bajo una estructura cliente-servidor desacoplada que permite
 
 ```mermaid
 graph TD
-    A[index.html - SPA Catálogo/Dashboard] -->|Redirección sin sesión| H[login.html - Login]
-    H -->|Enlace de registro| I[registro.html - Registro]
-    I -->|Retorno a login| H
-    H -->|Autenticación exitosa| A
-    A -->|Consumo frontend| B(JavaScript ES6 / Supabase SDK)
-    B -->|Peticiones HTTPS| C[Supabase Cloud REST API]
+    Root[index.html - URL Raíz SPA] -->|Verifica Sesión: Inexistente| B[login.html - Acceso Obligatorio]
+    B -->|Click en registro| C[registro.html - Creación Cuenta]
+    C -->|Retorno a Login| B
+    B -->|Autenticación Exitosa| D[index.html - Catálogo/Dashboard SPA]
+    D -->|Click en Cerrar Sesión| B
+    D -->|Consumo Seguro de API| E(JavaScript ES6 / Supabase SDK)
+    E -->|Consultas HTTPS| F[Supabase Cloud REST API]
     
     subgraph Supabase Backend
-        D[Supabase Auth] -->|Manejo de Autenticación| C
-        E[PostgreSQL Database] -->|Acceso a Datos Relacionales| C
-        F[Políticas RLS] -->|Filtro de Seguridad por Rol| E
+        G[Supabase Auth] -->|Manejo de Autenticación| F
+        H[PostgreSQL Database] -->|Almacenamiento Relacional| F
+        I[Políticas RLS] -->|Filtro de Seguridad por Rol| H
     end
 
-    E -->|Trigger Automático| G[Tabla de Perfiles public.profiles]
+    H -->|Trigger Automático| J[Tabla de Perfiles public.profiles]
 ```
 
 ### Flujo de Funcionamiento:
