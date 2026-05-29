@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Cuenta - StockGuard</title>
+    
+    <!-- Enlace a la hoja de estilos personalizada -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Iconos Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="full-page-bg">
+
+    <!-- Contenedor del Sistema de Notificaciones Toast -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="auth-container">
+        <div class="card auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i data-lucide="user-plus"></i>
+                </div>
+                <h2 class="auth-title">Crear Cuenta</h2>
+                <p class="auth-subtitle">Regístrate para realizar pedidos en línea y ver tu historial</p>
+            </div>
+            
+            <form id="register-form" autocomplete="off">
+                <div class="form-group">
+                    <label class="form-label" for="register-name">Nombre Completo</label>
+                    <div class="input-container">
+                        <input class="form-input" type="text" id="register-name" required placeholder="Ej. Maximiliano Giler">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="register-email">Correo Electrónico</label>
+                    <div class="input-container">
+                        <input class="form-input" type="email" id="register-email" required placeholder="correo@ejemplo.com">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="register-password">Contraseña</label>
+                    <div class="input-container">
+                        <input class="form-input" type="password" id="register-password" required placeholder="••••••••" minlength="6">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" id="register-submit-btn">
+                    <span>Crear Cuenta</span>
+                    <i data-lucide="check"></i>
+                </button>
+            </form>
+            
+            <div class="auth-toggle-text">
+                <span>¿Ya tienes una cuenta?</span>
+                <a href="login.html" class="auth-toggle-link">Inicia sesión aquí</a>
+            </div>
+            
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <a href="index.html" style="color: var(--text-muted); font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; transition: var(--transition-smooth);" onmouseover="this.style.color='white'" onmouseout="this.style.color='var(--text-muted)'">
+                    <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
+                    <span>Volver al Catálogo Público</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carga de Scripts y SDK de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/registro.js"></script>
+
+</body>
+</html>

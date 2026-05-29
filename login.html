@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - StockGuard</title>
+    
+    <!-- Enlace a la hoja de estilos personalizada -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Iconos Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="full-page-bg">
+
+    <!-- Contenedor del Sistema de Notificaciones Toast -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="auth-container">
+        <div class="card auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i data-lucide="shield-check"></i>
+                </div>
+                <h2 class="auth-title">Iniciar Sesión</h2>
+                <p class="auth-subtitle">Accede a la plataforma de inventario de Abarrotes</p>
+            </div>
+            
+            <form id="login-form" autocomplete="off">
+                <div class="form-group">
+                    <label class="form-label" for="login-email">Correo Electrónico</label>
+                    <div class="input-container">
+                        <input class="form-input" type="email" id="login-email" required placeholder="correo@ejemplo.com">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="login-password">Contraseña</label>
+                    <div class="input-container">
+                        <input class="form-input" type="password" id="login-password" required placeholder="••••••••" minlength="6">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" id="login-submit-btn">
+                    <span>Ingresar</span>
+                    <i data-lucide="arrow-right"></i>
+                </button>
+            </form>
+            
+            <div class="auth-toggle-text">
+                <span>¿No tienes una cuenta?</span>
+                <a href="registro.html" class="auth-toggle-link">Regístrate aquí</a>
+            </div>
+            
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <a href="index.html" style="color: var(--text-muted); font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; transition: var(--transition-smooth);" onmouseover="this.style.color='white'" onmouseout="this.style.color='var(--text-muted)'">
+                    <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
+                    <span>Volver al Catálogo Público</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carga de Scripts y SDK de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/login.js"></script>
+
+</body>
+</html>

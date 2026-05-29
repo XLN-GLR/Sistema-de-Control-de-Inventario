@@ -314,23 +314,45 @@ button, input, select, textarea {
 }
 
 /* ====================================================================
-   PANTALLA DE ACCESO (LOGIN / REGISTRO)
+   PANTALLA DE ACCESO (LOGIN / REGISTRO - INDEPENDIENTES)
    ==================================================================== */
+
+.full-page-bg {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-main);
+    background-image: 
+        radial-gradient(circle at 15% 25%, rgba(99, 102, 241, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(14, 165, 233, 0.08) 0%, transparent 45%);
+    padding: 1.5rem;
+}
 
 .auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 70vh;
+    width: 100%;
+    min-height: 80vh;
     padding: 1rem;
 }
 
 .auth-card {
     width: 100%;
-    max-width: 450px;
-    padding: 2.5rem;
+    max-width: 460px;
+    padding: 2.75rem;
     border-radius: var(--radius-lg);
-    background: rgba(17, 24, 39, 0.8);
+    background: rgba(17, 24, 39, 0.75);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+    animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.auth-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
 }
 
 .auth-header {
@@ -723,6 +745,11 @@ button, input, select, textarea {
     margin-top: auto;
     padding-top: 0.75rem;
     border-top: 1px solid rgba(255, 255, 255, 0.04);
+    gap: 1.25rem; /* Espaciado mínimo para que el precio no quede pegado al botón */
+}
+
+.product-card-footer .btn {
+    flex-shrink: 0; /* Previene que el botón se reduzca o colapse en pantallas pequeñas */
 }
 
 .product-card-price {

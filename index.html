@@ -34,54 +34,7 @@
             </div>
         </nav>
 
-        <!-- ====================================================================
-             VISTA 1: INICIO DE SESIÓN / REGISTRO (auth-view)
-             ==================================================================== -->
-        <section id="view-auth" class="view-section view-section-auth auth-container">
-            <div class="card auth-card">
-                <div class="auth-header">
-                    <div class="auth-logo">
-                        <i data-lucide="shield-check"></i>
-                    </div>
-                    <h2 class="auth-title" id="auth-view-title">Iniciar Sesión</h2>
-                    <p class="auth-subtitle" id="auth-view-subtitle">Accede a la plataforma de inventario de Abarrotes</p>
-                </div>
-                
-                <form id="auth-form" autocomplete="off">
-                    <!-- Campo Nombre (Solo visible en registro) -->
-                    <div class="form-group" id="form-group-name" style="display: none;">
-                        <label class="form-label" for="auth-name">Nombre Completo</label>
-                        <div class="input-container">
-                            <input class="form-input" type="text" id="auth-name" placeholder="Ej. Maximiliano Giler">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="auth-email">Correo Electrónico</label>
-                        <div class="input-container">
-                            <input class="form-input" type="email" id="auth-email" required placeholder="correo@ejemplo.com">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="auth-password">Contraseña</label>
-                        <div class="input-container">
-                            <input class="form-input" type="password" id="auth-password" required placeholder="••••••••" minlength="6">
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" id="auth-submit-btn">
-                        <span>Ingresar</span>
-                        <i data-lucide="arrow-right"></i>
-                    </button>
-                </form>
-                
-                <div class="auth-toggle-text">
-                    <span id="auth-toggle-msg">¿No tienes una cuenta?</span>
-                    <a class="auth-toggle-link" id="auth-toggle-link">Regístrate</a>
-                </div>
-            </div>
-        </section>
+        <!-- La autenticación ahora se maneja de forma independiente en login.html y registro.html -->
 
         <!-- ====================================================================
              VISTA 2: CATÁLOGO DE PRODUCTOS - CLIENTE (catalog-view)

@@ -23,7 +23,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. Configurar escuchas de eventos principales en el DOM
     setupEventListeners();
 
-    // 2. Escuchar cambios de estado en la autenticación de Supabase
+    // 2. Cargar productos inicialmente (Lectura pública) - IMPRESCINDIBLE CARGAR PRIMERO
+    // Esto resuelve el problema de carrera donde la UI se renderizaba vacía en el reinicio
+    await cargarProductos();
+
+    // 3. Renderizar el catálogo inicial (para que los productos se vean de inmediato)
+    renderCatalogo();
+
+    // 4. Escuchar cambios de estado en la autenticación de Supabase
     api.supabase.auth.onAuthStateChange(async (event, session) => {
         console.log("Cambio de estado Auth:", event);
         if (session && session.user) {
@@ -68,9 +75,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             switchView('catalog');
         }
     });
-
-    // Cargar productos inicialmente (Lectura pública)
-    await cargarProductos();
     
     // Inicializar iconos Lucide
     if (window.lucide) {
@@ -91,13 +95,7 @@ function setupEventListeners() {
         }
     });
 
-    // Formulario de Autenticación (Login / Registro)
-    const authForm = document.getElementById('auth-form');
-    authForm.addEventListener('submit', handleAuthSubmit);
-
-    // Enlace para alternar entre Login y Registro
-    const authToggleLink = document.getElementById('auth-toggle-link');
-    authToggleLink.addEventListener('click', toggleAuthMode);
+    // La autenticación ahora se gestiona de forma externa en login.html y registro.html
 
     // Controles de búsqueda y filtros del catálogo de clientes
     document.getElementById('catalog-search').addEventListener('input', filtrarCatalogo);
@@ -172,7 +170,7 @@ function switchView(viewId) {
     
     if (viewId === 'orders' && !AppState.user) {
         ui.showToast('Inicia sesión para ver tu historial de pedidos', 'warning');
-        switchView('auth');
+        window.location.href = 'login.html';
         return;
     }
 
@@ -282,7 +280,7 @@ function renderNavbar() {
         `;
 
         document.getElementById('nav-login-btn').addEventListener('click', () => {
-            switchView('auth');
+            window.location.href = 'login.html';
         });
     }
 
@@ -293,88 +291,10 @@ function renderNavbar() {
 
 
 // ====================================================================
-// 2. LÓGICA DE AUTENTICACIÓN (LOGIN / REGISTRO)
+// 2. LÓGICA DE AUTENTICACIÓN (LOGIN / REGISTRO TRASLADADOS)
 // ====================================================================
-
-let isRegisterMode = false;
-
-function toggleAuthMode(e) {
-    if (e) e.preventDefault();
-    isRegisterMode = !isRegisterMode;
-
-    const title = document.getElementById('auth-view-title');
-    const subtitle = document.getElementById('auth-view-subtitle');
-    const nameGroup = document.getElementById('form-group-name');
-    const submitBtn = document.getElementById('auth-submit-btn');
-    const toggleMsg = document.getElementById('auth-toggle-msg');
-    const toggleLink = document.getElementById('auth-toggle-link');
-
-    if (isRegisterMode) {
-        title.textContent = "Crear una Cuenta";
-        subtitle.textContent = "Regístrate para realizar pedidos en línea";
-        nameGroup.style.display = "block";
-        submitBtn.querySelector('span').textContent = "Registrarse";
-        toggleMsg.textContent = "¿Ya tienes una cuenta?";
-        toggleLink.textContent = "Inicia Sesión";
-    } else {
-        title.textContent = "Iniciar Sesión";
-        subtitle.textContent = "Accede a la plataforma de inventario de Abarrotes";
-        nameGroup.style.display = "none";
-        submitBtn.querySelector('span').textContent = "Ingresar";
-        toggleMsg.textContent = "¿No tienes una cuenta?";
-        toggleLink.textContent = "Regístrate";
-    }
-}
-
-async function handleAuthSubmit(e) {
-    e.preventDefault();
-
-    const email = document.getElementById('auth-email').value.trim();
-    const password = document.getElementById('auth-password').value;
-    const nombre = document.getElementById('auth-name').value.trim();
-
-    if (!email || !password) {
-        ui.showToast('Por favor, completa los campos requeridos', 'warning');
-        return;
-    }
-
-    // Deshabilitar botón durante la transacción
-    const submitBtn = document.getElementById('auth-submit-btn');
-    submitBtn.disabled = true;
-    submitBtn.querySelector('span').textContent = "Procesando...";
-
-    if (isRegisterMode) {
-        // Modo Registro
-        if (!nombre) {
-            ui.showToast('Por favor ingresa tu nombre', 'warning');
-            submitBtn.disabled = false;
-            submitBtn.querySelector('span').textContent = "Registrarse";
-            return;
-        }
-
-        const { data, error } = await api.signUp(email, password, nombre);
-        if (error) {
-            ui.showToast(`Error al registrarse: ${error}`, 'danger');
-        } else {
-            ui.showToast('¡Registro exitoso! Ya puedes iniciar sesión.', 'success');
-            toggleAuthMode();
-            authForm.reset();
-        }
-    } else {
-        // Modo Inicio Sesión
-        const { data, error } = await api.signIn(email, password);
-        if (error) {
-            ui.showToast(`Error de credenciales: ${error}`, 'danger');
-        } else {
-            // Sincronización exitosa handled por onAuthStateChange
-            authForm.reset();
-        }
-    }
-
-    submitBtn.disabled = false;
-    submitBtn.querySelector('span').textContent = isRegisterMode ? "Registrarse" : "Ingresar";
-    if (window.lucide) window.lucide.createIcons();
-}
+// La lógica de login y registro se maneja de forma independiente en sus
+// respectivos controladores: js/login.js y js/registro.js para un diseño más despejado
 
 
 // ====================================================================
@@ -432,7 +352,7 @@ function filtrarCatalogo() {
 function agregarAlCarrito(producto) {
     if (!AppState.user) {
         ui.showToast('Debes iniciar sesión para realizar pedidos', 'warning');
-        switchView('auth');
+        window.location.href = 'login.html';
         return;
     }
 
