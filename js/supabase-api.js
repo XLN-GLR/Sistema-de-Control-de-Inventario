@@ -353,3 +353,21 @@ export async function updateEstadoPedido(pedidoId, nuevoEstado) {
         return { data: null, error: error.message };
     }
 }
+
+/**
+ * Elimina permanentemente un pedido y sus detalles asociados de la base de datos (Solo Admin).
+ */
+export async function deletePedido(pedidoId) {
+    try {
+        const { error } = await supabase
+            .from('pedidos')
+            .delete()
+            .eq('id', pedidoId);
+
+        if (error) throw error;
+        return { error: null };
+    } catch (error) {
+        console.error("Error en deletePedido:", error.message);
+        return { error: error.message };
+    }
+}

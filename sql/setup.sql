@@ -157,9 +157,16 @@ create policy "Clientes pueden registrar sus propios pedidos"
     to authenticated
     with check (auth.uid() = cliente_id);
 
--- Permitir que los administradores actualicen el estado de los pedidos (completar/cancelar)
-create policy "Solo administradores pueden actualizar pedidos"
+-- Permitir que los administradores actualicen el estado de los pedidos (completar/cancelar), o a los clientes cancelar el suyo propio si está pendiente
+create policy "Permitir actualizar pedidos a admin o al cliente dueño"
     on public.pedidos for update
+    to authenticated
+    using (auth.uid() = cliente_id or public.es_admin())
+    with check (auth.uid() = cliente_id or public.es_admin());
+
+-- Permitir la eliminación física de registros de pedidos SOLO a administradores
+create policy "Solo administradores pueden eliminar pedidos"
+    on public.pedidos for delete
     to authenticated
     using (public.es_admin());
 

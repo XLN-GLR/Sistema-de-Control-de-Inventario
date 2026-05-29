@@ -865,15 +865,34 @@ async function abrirDetallesPedido(pedido) {
         `;
 
         footer.querySelector('.cancel-order-btn').addEventListener('click', () => cambiarEstado(pedido.id, 'cancelado'));
-        footer.querySelector('.complete-order-btn').addEventListener('click', () => cambiarEstado(pedido.id, 'completated')); // Standard database check has completed, wait it's "completado" in setup.sql, let's use 'completado'
+        footer.querySelector('.complete-order-btn').addEventListener('click', () => cambiarEstado(pedido.id, 'completado'));
+    } else if (!isAdmin && pedido.estado === 'pendiente') {
+        // Permitir que el cliente cancele su propio pedido si aún está pendiente
+        footer.innerHTML = `
+            <button class="btn btn-danger btn-sm cancel-order-btn">Cancelar Pedido</button>
+            <button class="btn btn-secondary btn-sm close-modal-btn">Cerrar</button>
+        `;
+
+        footer.querySelector('.cancel-order-btn').addEventListener('click', () => cambiarEstado(pedido.id, 'cancelado'));
+        footer.querySelector('.close-modal-btn').addEventListener('click', () => modal.classList.remove('active'));
+    } else if (isAdmin && (pedido.estado === 'completado' || pedido.estado === 'cancelado')) {
+        // Permitir que el administrador elimine registros de pedidos completados o cancelados
+        footer.innerHTML = `
+            <button class="btn btn-danger btn-sm delete-order-btn" style="background: rgba(239, 68, 68, 0.15); border-color: var(--color-danger); color: #fca5a5;">
+                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                <span>Eliminar Registro</span>
+            </button>
+            <button class="btn btn-secondary btn-sm close-modal-btn">Cerrar</button>
+        `;
+
+        footer.querySelector('.delete-order-btn').addEventListener('click', () => eliminarPedido(pedido.id));
+        footer.querySelector('.close-modal-btn').addEventListener('click', () => modal.classList.remove('active'));
     } else {
         footer.innerHTML = `<button class="btn btn-secondary btn-sm close-modal-btn">Cerrar</button>`;
         footer.querySelector('.close-modal-btn').addEventListener('click', () => modal.classList.remove('active'));
     }
 
     async function cambiarEstado(id, nuevoEstado) {
-        // En setup.sql, el check tiene ('pendiente', 'completado', 'cancelado').
-        // Mapear 'completated' a 'completado'
         const estadoDb = nuevoEstado === 'completated' ? 'completado' : nuevoEstado;
         
         const { data, error: errUpdate } = await api.updateEstadoPedido(id, estadoDb);
@@ -889,6 +908,21 @@ async function abrirDetallesPedido(pedido) {
             await cargarProductos();
             cargarEstadisticasAdmin();
             renderInventario();
+        }
+    }
+
+    async function eliminarPedido(id) {
+        if (confirm('¿Estás seguro de que deseas eliminar permanentemente este registro de pedido de la base de datos? Esta acción es irreversible.')) {
+            const { error } = await api.deletePedido(id);
+            if (error) {
+                ui.showToast(`Error al eliminar pedido: ${error}`, 'danger');
+            } else {
+                ui.showToast('Pedido eliminado permanentemente de la base de datos.', 'success');
+                modal.classList.remove('active');
+                
+                // Recargar listados
+                await cargarPedidos();
+            }
         }
     }
 
