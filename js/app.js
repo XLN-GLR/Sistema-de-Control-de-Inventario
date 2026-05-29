@@ -288,9 +288,33 @@ function renderNavbar() {
         `;
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
-            const { error } = await api.signOut();
-            if (!error) {
-                ui.showToast('Sesión cerrada correctamente', 'success');
+            // 1. Mostrar feedback inmediato al usuario
+            ui.showToast('Cerrando sesión...', 'info');
+
+            // 2. Limpiar de inmediato el estado local en la SPA (salida instantánea)
+            AppState.user = null;
+            AppState.profile = null;
+            AppState.carrito = [];
+            AppState.pedidos = [];
+
+            // 3. Limpiar almacenamiento local (incluyendo tokens de Supabase expirados o inconsistentes)
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+            } catch (e) {
+                console.error("Error al limpiar almacenamiento local:", e);
+            }
+
+            // 4. Actualizar la interfaz de forma inmediata para una UX fluida
+            actualizarContadorCarrito();
+            renderNavbar();
+            switchView('catalog');
+
+            // 5. Notificar de forma asíncrona y no bloqueante al servidor Supabase
+            try {
+                await api.supabase.auth.signOut();
+            } catch (err) {
+                console.warn("Notificación de salida no bloqueante fallida:", err);
             }
         });
     } else {
