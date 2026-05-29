@@ -20,24 +20,42 @@ const AppState = {
 // ====================================================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Verificar sesión de forma asíncrona inmediata en Supabase Auth
-    // Si no hay usuario autenticado activo, redirigir de inmediato a login.html
-    const user = await api.getCurrentUser();
-    if (!user) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    // 2. Si hay sesión activa, inicializar escuchas del DOM
+    // 1. Inicializar escuchas del DOM inmediatamente (catálogo público de lectura accesible)
     setupEventListeners();
 
-    // 3. Cargar productos inicialmente (Lectura segura tras autenticación)
+    // 2. Cargar productos inicialmente (Lectura pública desde el primer segundo)
     await cargarProductos();
 
-    // 4. Renderizar catálogo inicial en pantalla
+    // 3. Renderizar catálogo inicial en pantalla para todos (visitantes y logueados)
     renderCatalogo();
 
-    // 5. Escuchar cambios futuros de estado en la autenticación de Supabase
+    // 4. Intentar recuperar la sesión actual en segundo plano para persistir el estado si está logueado
+    const sessionUser = await api.getCurrentUser();
+    if (sessionUser) {
+        AppState.user = sessionUser;
+        const { profile } = await api.getUserProfile(sessionUser.id);
+        if (profile) {
+            AppState.profile = profile;
+        } else {
+            AppState.profile = {
+                rol: sessionUser.email === 'bjacnier28giler@gmail.com' ? 'admin' : 'cliente',
+                nombre: sessionUser.user_metadata?.nombre || 'Usuario'
+            };
+        }
+        // Renderizar barra de navegación con perfil y enrutar correspondientemente
+        renderNavbar();
+        if (AppState.profile?.rol === 'admin') {
+            switchView('admin');
+        } else {
+            switchView('catalog');
+        }
+    } else {
+        // Renderizar navbar simplificada para visitantes
+        renderNavbar();
+        switchView('catalog');
+    }
+
+    // 5. Escuchar cambios de estado en la autenticación de Supabase (inicios de sesión o cierres en vivo)
     api.supabase.auth.onAuthStateChange(async (event, session) => {
         console.log("Cambio de estado Auth en la SPA:", event);
         if (session && session.user) {
@@ -50,12 +68,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 // Forzar el rol de administrador para el correo específico indicado por el usuario
                 if (session.user.email === 'bjacnier28giler@gmail.com' && profile.rol !== 'admin') {
-                    // Actualizar en base de datos para persistirlo
                     await api.updateProducto(profile.id, { rol: 'admin' });
                     AppState.profile.rol = 'admin';
                 }
             } else {
-                // Fallback de seguridad para asignar rol
                 AppState.profile = {
                     rol: session.user.email === 'bjacnier28giler@gmail.com' ? 'admin' : 'cliente',
                     nombre: session.user.user_metadata?.nombre || 'Usuario'
@@ -64,7 +80,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             ui.showToast(`¡Bienvenido de nuevo, ${AppState.profile.nombre}!`, 'success');
             
-            // Renderizar barra de navegación dinámica y cambiar vistas correspondientes
             renderNavbar();
             if (AppState.profile?.rol === 'admin') {
                 switchView('admin');
@@ -72,13 +87,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 switchView('catalog');
             }
         } else {
-            // Si el usuario cierra sesión, limpiar estado y redirigir obligatoriamente a login.html
+            // Si el usuario cierra sesión, limpiar estado y redirigir al catálogo público sin forzar salida física
             AppState.user = null;
             AppState.profile = null;
             AppState.carrito = [];
             AppState.pedidos = [];
             actualizarContadorCarrito();
-            window.location.href = 'login.html';
+            renderNavbar();
+            switchView('catalog');
         }
     });
     

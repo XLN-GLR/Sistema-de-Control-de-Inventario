@@ -25,11 +25,11 @@ El sistema funciona bajo una estructura cliente-servidor desacoplada que permite
 
 ```mermaid
 graph TD
-    Root[index.html - URL Raíz SPA] -->|Verifica Sesión: Inexistente| B[login.html - Acceso Obligatorio]
+    Root[index.html - Catálogo Público Raíz] -->|Click en Agregar al Carrito sin sesión| B[login.html - Login]
     B -->|Click en registro| C[registro.html - Creación Cuenta]
     C -->|Retorno a Login| B
-    B -->|Autenticación Exitosa| D[index.html - Catálogo/Dashboard SPA]
-    D -->|Click en Cerrar Sesión| B
+    B -->|Autenticación Exitosa| D[index.html - Dashboard / Catálogo Logueado]
+    D -->|Click en Cerrar Sesión| Root
     D -->|Consumo Seguro de API| E(JavaScript ES6 / Supabase SDK)
     E -->|Consultas HTTPS| F[Supabase Cloud REST API]
     
