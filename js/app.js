@@ -2,8 +2,8 @@
    LÓGICA PRINCIPAL DE LA APLICACIÓN (SPA CONTROLLER)
    ==================================================================== */
 
-import * as api from './supabase-api.js?v=1.0.4';
-import * as ui from './components.js?v=1.0.4';
+import * as api from './supabase-api.js?v=1.0.5';
+import * as ui from './components.js?v=1.0.5';
 
 // Estado global de la aplicación (State Management)
 const AppState = {
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 // Forzar el rol de administrador para el correo específico indicado por el usuario
                 if (session.user.email === 'bjacnier28giler@gmail.com' && profile.rol !== 'admin') {
-                    await api.updateProducto(profile.id, { rol: 'admin' });
+                    await api.updateProfile(profile.id, { rol: 'admin' });
                     AppState.profile.rol = 'admin';
                 }
             } else {
@@ -551,6 +551,9 @@ function cargarEstadisticasAdmin() {
     const criticalEl = document.getElementById('stat-critical-products');
     const alertCard = document.getElementById('stat-alert-card');
 
+    // Salvaguarda robusta para evitar excepciones si la vista no tiene estos elementos
+    if (!totalProductsEl || !valueEl || !criticalEl || !alertCard) return;
+
     const total = AppState.productos.length;
     const valorInventario = AppState.productos.reduce((sum, p) => sum + (p.stock * Number(p.precio)), 0);
     
@@ -688,29 +691,34 @@ async function handleProductSubmit(e) {
     saveBtn.disabled = true;
     saveBtn.textContent = "Guardando...";
 
-    let result;
-    if (id) {
-        // Actualización
-        result = await api.updateProducto(id, productoData);
-    } else {
-        // Inserción
-        result = await api.addProducto(productoData);
-    }
+    try {
+        let result;
+        if (id) {
+            // Actualización
+            result = await api.updateProducto(id, productoData);
+        } else {
+            // Inserción
+            result = await api.addProducto(productoData);
+        }
 
-    if (result.error) {
-        ui.showToast(`Error al guardar el producto: ${result.error}`, 'danger');
-    } else {
-        ui.showToast(`Producto "${productoData.nombre}" guardado con éxito`, 'success');
-        closeProductModal();
-        
-        // Recargar inventario
-        await cargarProductos();
-        cargarEstadisticasAdmin();
-        renderInventario();
+        if (result.error) {
+            ui.showToast(`Error al guardar el producto: ${result.error}`, 'danger');
+        } else {
+            ui.showToast(`Producto "${productoData.nombre}" guardado con éxito`, 'success');
+            closeProductModal();
+            
+            // Recargar inventario
+            await cargarProductos();
+            cargarEstadisticasAdmin();
+            renderInventario();
+        }
+    } catch (err) {
+        console.error("Excepción en handleProductSubmit:", err);
+        ui.showToast(`Error crítico al guardar: ${err.message || String(err)}`, 'danger');
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = id ? "Guardar Cambios" : "Guardar Producto";
     }
-
-    saveBtn.disabled = false;
-    saveBtn.textContent = id ? "Guardar Cambios" : "Guardar Producto";
 }
 
 async function eliminarProducto(id) {

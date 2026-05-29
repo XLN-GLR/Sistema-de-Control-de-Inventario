@@ -97,7 +97,24 @@ export async function getUserProfile(userId) {
     }
 }
 
+/**
+ * Actualiza los campos de un perfil de usuario (ej. rol) en public.profiles.
+ */
+export async function updateProfile(userId, campos) {
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .update(campos)
+            .eq('id', userId)
+            .select();
 
+        if (error) throw error;
+        return { data: data[0], error: null };
+    } catch (error) {
+        console.error("Error en updateProfile:", error.message);
+        return { data: null, error: error.message };
+    }
+}
 /**
  * ====================================================================
  * SECCIÓN 2: SERVICIOS DE INVENTARIO (CRUD PRODUCTOS)
@@ -323,7 +340,16 @@ export async function getDetallesPedido(pedidoId) {
  */
 export async function updateEstadoPedido(pedidoId, nuevoEstado) {
     try {
-        // Si el estado es 'cancelado', devolvemos el stock de los productos comprados
+        // 1. Intentar actualizar el estado del pedido primero en Supabase
+        const { data, error } = await supabase
+            .from('pedidos')
+            .update({ estado: nuevoEstado })
+            .eq('id', pedidoId)
+            .select();
+
+        if (error) throw error;
+
+        // 2. Si se canceló correctamente en la DB, proceder a devolver el stock de los productos comprados
         if (nuevoEstado === 'cancelado') {
             const { detalles, error: errDetalles } = await getDetallesPedido(pedidoId);
             if (!errDetalles && detalles) {
@@ -340,13 +366,6 @@ export async function updateEstadoPedido(pedidoId, nuevoEstado) {
             }
         }
 
-        const { data, error } = await supabase
-            .from('pedidos')
-            .update({ estado: nuevoEstado })
-            .eq('id', pedidoId)
-            .select();
-
-        if (error) throw error;
         return { data: data[0], error: null };
     } catch (error) {
         console.error("Error en updateEstadoPedido:", error.message);
