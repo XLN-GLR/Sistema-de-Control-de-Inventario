@@ -59,7 +59,7 @@ export function renderProductCard(producto, onAddToCart) {
     if (isOutOfStock) {
         badgeHTML = `<span class="stock-badge critico product-card-badge">Agotado</span>`;
     } else if (isLowStock) {
-        badgeHTML = `<span class="stock-badge critico product-card-badge" style="background: var(--color-warning-bg); color: var(--color-warning);">Pocas Unidades</span>`;
+        badgeHTML = `<span class="stock-badge critico product-card-badge" style="background: var(--color-danger-bg); color: #ff8b80; border: 1px solid var(--color-danger);">Pocas Unidades</span>`;
     }
 
     card.innerHTML = `

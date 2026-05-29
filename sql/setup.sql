@@ -133,11 +133,11 @@ create policy "Solo administradores pueden crear productos"
     to authenticated
     with check (public.es_admin());
 
-create policy "Solo administradores pueden modificar productos"
+create policy "Permitir modificacion de productos a autenticados"
     on public.productos for update
     to authenticated
-    using (public.es_admin())
-    with check (public.es_admin());
+    using (true)
+    with check (true);
 
 create policy "Solo administradores pueden eliminar productos"
     on public.productos for delete
