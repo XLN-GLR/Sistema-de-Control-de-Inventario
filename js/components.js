@@ -291,3 +291,83 @@ export function renderOrderCard(pedido, isAdmin, onViewDetails, onCancelar, onCo
 
     return card;
 }
+
+/**
+ * Muestra un diálogo de confirmación premium integrado en el sitio web (Promise-based).
+ * @param {string} title Título del diálogo
+ * @param {string} message Mensaje o descripción de la acción
+ * @param {string} confirmBtnText Texto del botón de confirmación
+ * @param {string} cancelBtnText Texto del botón de cancelación
+ * @param {boolean} isDanger Si es true usa color rojo peligro, si es false usa verde de éxito
+ * @returns {Promise<boolean>} Resuelve true si acepta, false si cancela
+ */
+export function showConfirm(title, message, confirmBtnText = 'Aceptar', cancelBtnText = 'Cancelar', isDanger = true) {
+    return new Promise((resolve) => {
+        // Crear elemento backdrop del modal
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop';
+        backdrop.style.zIndex = '1100';
+        backdrop.style.display = 'flex'; // Forzar flex para la alineación
+
+        const iconName = isDanger ? 'alert-triangle' : 'check-circle';
+        const iconColor = isDanger ? 'var(--color-danger)' : '#10b981';
+        const iconBg = isDanger ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)';
+        const iconBorder = isDanger ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.25)';
+        const btnClass = isDanger ? 'btn btn-danger btn-sm' : 'btn btn-primary btn-sm';
+        const btnColorStyle = isDanger ? '' : 'background: #10b981; border-color: #10b981; color: white;';
+
+        backdrop.innerHTML = `
+            <div class="modal-content" style="max-width: 420px; text-align: center; padding: 2rem; transform: scale(0.9); opacity: 0; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);">
+                <div style="margin: 0 auto 1.25rem auto; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${iconBg}; border: 1.5px solid ${iconBorder};">
+                    <i data-lucide="${iconName}" style="width: 28px; height: 28px; color: ${iconColor};"></i>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: white; margin-bottom: 0.75rem; font-family: var(--font-heading);">${title}</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.75rem; padding: 0 0.5rem;">${message}</p>
+                <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                    <button class="btn btn-secondary btn-sm cancel-confirm-btn" style="padding: 0.5rem 1.25rem; min-width: 100px; cursor: pointer;">${cancelBtnText}</button>
+                    <button class="${btnClass} accept-confirm-btn" style="padding: 0.5rem 1.25rem; min-width: 100px; cursor: pointer; ${btnColorStyle}">${confirmBtnText}</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(backdrop);
+
+        // Disparar micro-animación de entrada
+        setTimeout(() => {
+            const content = backdrop.querySelector('.modal-content');
+            if (content) {
+                content.style.transform = 'scale(1)';
+                content.style.opacity = '1';
+            }
+        }, 10);
+
+        // Inicializar iconos Lucide específicos para este modal
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+
+        // Función para cerrar el modal y resolver con transición
+        const cleanup = (result) => {
+            const content = backdrop.querySelector('.modal-content');
+            if (content) {
+                content.style.transform = 'scale(0.9)';
+                content.style.opacity = '0';
+            }
+            setTimeout(() => {
+                backdrop.remove();
+                resolve(result);
+            }, 200);
+        };
+
+        // Event Listeners
+        backdrop.querySelector('.cancel-confirm-btn').addEventListener('click', () => cleanup(false));
+        backdrop.querySelector('.accept-confirm-btn').addEventListener('click', () => cleanup(true));
+
+        // Cerrar al hacer clic en el backdrop oscuro
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) {
+                cleanup(false);
+            }
+        });
+    });
+}

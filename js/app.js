@@ -2,8 +2,8 @@
    LÓGICA PRINCIPAL DE LA APLICACIÓN (SPA CONTROLLER)
    ==================================================================== */
 
-import * as api from './supabase-api.js?v=1.0.5';
-import * as ui from './components.js?v=1.0.5';
+import * as api from './supabase-api.js?v=1.0.6';
+import * as ui from './components.js?v=1.0.6';
 
 // Estado global de la aplicación (State Management)
 const AppState = {
@@ -725,7 +725,15 @@ async function eliminarProducto(id) {
     const prod = AppState.productos.find(p => p.id === id);
     if (!prod) return;
 
-    if (confirm(`¿Estás seguro de que deseas eliminar el producto "${prod.nombre}" del inventario?`)) {
+    const confirmado = await ui.showConfirm(
+        'Eliminar Producto',
+        `¿Estás seguro de que deseas eliminar permanentemente el producto "${prod.nombre}" del inventario? Esta acción no se puede deshacer.`,
+        'Eliminar',
+        'Cancelar',
+        true
+    );
+
+    if (confirmado) {
         const { error } = await api.deleteProducto(id);
         if (error) {
             ui.showToast(`Error al eliminar: ${error}`, 'danger');
@@ -819,15 +827,25 @@ function filtrarPedidos() {
 async function cambiarEstado(id, nuevoEstado) {
     const estadoDb = nuevoEstado === 'completated' ? 'completado' : nuevoEstado;
     
-    // Diálogos de confirmación para evitar clics accidentales
+    // Diálogos de confirmación premium para evitar clics accidentales
     if (estadoDb === 'cancelado') {
-        if (!confirm('¿Estás seguro de que deseas cancelar este pedido? Esto devolverá automáticamente el stock de los productos al inventario.')) {
-            return;
-        }
+        const confirmado = await ui.showConfirm(
+            'Cancelar Pedido',
+            '¿Estás seguro de que deseas cancelar este pedido? Esto devolverá automáticamente todo el stock de los productos al inventario.',
+            'Cancelar Pedido',
+            'Volver',
+            true
+        );
+        if (!confirmado) return;
     } else if (estadoDb === 'completado') {
-        if (!confirm('¿Estás seguro de que deseas marcar este pedido como COMPLETADO?')) {
-            return;
-        }
+        const confirmado = await ui.showConfirm(
+            'Completar Pedido',
+            '¿Estás seguro de que deseas marcar este pedido como COMPLETADO? Se registrará la entrega y cierre de la orden.',
+            'Completar',
+            'Volver',
+            false // Estilo verde / éxito
+        );
+        if (!confirmado) return;
     }
     
     const { data, error: errUpdate } = await api.updateEstadoPedido(id, estadoDb);
@@ -855,7 +873,15 @@ async function cambiarEstado(id, nuevoEstado) {
  * Elimina físicamente un pedido de la base de datos (con confirmación de seguridad).
  */
 async function eliminarPedido(id) {
-    if (confirm('¿Estás seguro de que deseas eliminar permanentemente este registro de pedido de la base de datos? Esta acción es irreversible.')) {
+    const confirmado = await ui.showConfirm(
+        'Eliminar Registro de Pedido',
+        '¿Estás seguro de que deseas eliminar permanentemente este registro de pedido de la base de datos? Esta acción es irreversible y borrará todo el historial asociado.',
+        'Eliminar',
+        'Cancelar',
+        true
+    );
+
+    if (confirmado) {
         const { error } = await api.deletePedido(id);
         if (error) {
             ui.showToast(`Error al eliminar pedido: ${error}`, 'danger');
