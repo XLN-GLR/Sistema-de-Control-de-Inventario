@@ -117,7 +117,42 @@ function setupEventListeners() {
         }
     });
 
-    // La autenticación ahora se gestiona de forma externa en login.html y registro.html
+    // Delegación global de eventos para el botón de cerrar sesión (Logout) - 100% robusto para admin y clientes
+    document.addEventListener('click', async (e) => {
+        const logoutBtn = e.target.closest('#logout-btn');
+        if (logoutBtn) {
+            e.preventDefault();
+            
+            // 1. Mostrar feedback inmediato
+            ui.showToast('Cerrando sesión...', 'info');
+
+            // 2. Limpiar de inmediato el estado local
+            AppState.user = null;
+            AppState.profile = null;
+            AppState.carrito = [];
+            AppState.pedidos = [];
+
+            // 3. Limpiar storages de inmediato
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+            } catch (err) {
+                console.error("Error al limpiar almacenamiento local:", err);
+            }
+
+            // 4. Actualizar la interfaz de inmediato
+            actualizarContadorCarrito();
+            renderNavbar();
+            switchView('catalog');
+
+            // 5. Notificar a Supabase en segundo plano sin bloquear
+            try {
+                await api.supabase.auth.signOut();
+            } catch (signOutErr) {
+                console.warn("Notificación de salida no bloqueante fallida:", signOutErr);
+            }
+        }
+    });
 
     // Controles de búsqueda y filtros del catálogo de clientes
     document.getElementById('catalog-search').addEventListener('input', filtrarCatalogo);
@@ -286,37 +321,6 @@ function renderNavbar() {
                 <span>Salir</span>
             </button>
         `;
-
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            // 1. Mostrar feedback inmediato al usuario
-            ui.showToast('Cerrando sesión...', 'info');
-
-            // 2. Limpiar de inmediato el estado local en la SPA (salida instantánea)
-            AppState.user = null;
-            AppState.profile = null;
-            AppState.carrito = [];
-            AppState.pedidos = [];
-
-            // 3. Limpiar almacenamiento local (incluyendo tokens de Supabase expirados o inconsistentes)
-            try {
-                localStorage.clear();
-                sessionStorage.clear();
-            } catch (e) {
-                console.error("Error al limpiar almacenamiento local:", e);
-            }
-
-            // 4. Actualizar la interfaz de forma inmediata para una UX fluida
-            actualizarContadorCarrito();
-            renderNavbar();
-            switchView('catalog');
-
-            // 5. Notificar de forma asíncrona y no bloqueante al servidor Supabase
-            try {
-                await api.supabase.auth.signOut();
-            } catch (err) {
-                console.warn("Notificación de salida no bloqueante fallida:", err);
-            }
-        });
     } else {
         userMenu.innerHTML = `
             <button id="nav-login-btn" class="btn btn-primary btn-sm">
@@ -502,25 +506,32 @@ async function procesarCompra() {
     checkoutBtn.disabled = true;
     checkoutBtn.querySelector('span').textContent = "Confirmando...";
 
-    const totalDinero = AppState.carrito.reduce((sum, item) => sum + (item.cantidad * item.precio), 0);
+    try {
+        const totalDinero = AppState.carrito.reduce((sum, item) => sum + (item.cantidad * item.precio), 0);
 
-    const { pedido, error } = await api.crearPedido(AppState.user.id, totalDinero, AppState.carrito);
+        const { pedido, error } = await api.crearPedido(AppState.user.id, totalDinero, AppState.carrito);
 
-    if (error) {
-        ui.showToast(`Error al procesar la compra: ${error}`, 'danger');
+        if (error) {
+            ui.showToast(`Error al procesar la compra: ${error}`, 'danger');
+            checkoutBtn.disabled = false;
+            checkoutBtn.querySelector('span').textContent = "Confirmar Pedido";
+        } else {
+            ui.showToast('¡Pedido realizado con éxito!', 'success');
+            AppState.carrito = [];
+            renderCarrito();
+            
+            // Recargar productos para refrescar stock en la pantalla
+            await cargarProductos();
+            renderCatalogo();
+            
+            // Redirigir a sus pedidos
+            switchView('orders');
+        }
+    } catch (err) {
+        console.error("Excepción al procesar compra:", err);
+        ui.showToast(`Error crítico: ${err.message || String(err)}`, 'danger');
         checkoutBtn.disabled = false;
         checkoutBtn.querySelector('span').textContent = "Confirmar Pedido";
-    } else {
-        ui.showToast('¡Pedido realizado con éxito! Su stock ha sido actualizado.', 'success');
-        AppState.carrito = [];
-        renderCarrito();
-        
-        // Recargar productos para refrescar stock en la pantalla
-        await cargarProductos();
-        renderCatalogo();
-        
-        // Redirigir a sus pedidos
-        switchView('orders');
     }
     
     if (window.lucide) window.lucide.createIcons();

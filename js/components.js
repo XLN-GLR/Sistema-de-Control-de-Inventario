@@ -110,9 +110,9 @@ export function renderInventoryRow(producto, onEdit, onDelete) {
         <td data-label="Producto">
             <div class="product-info-cell">
                 <img src="${imgUrl}" class="product-img-thumb" alt="${producto.nombre}" onerror="this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400'">
-                <div>
-                    <strong style="display: block; margin-bottom: 6px;">${producto.nombre}</strong>
-                    <span class="product-cat-tag" style="display: inline-block; margin-top: 2px;">${producto.categoria}</span>
+                <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: left;">
+                    <strong style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary); line-height: 1.2;">${producto.nombre}</strong>
+                    <span class="product-cat-tag" style="margin: 0; line-height: 1; display: inline-block;">${producto.categoria}</span>
                 </div>
             </div>
         </td>

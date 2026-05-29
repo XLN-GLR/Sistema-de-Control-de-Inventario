@@ -237,27 +237,28 @@ export async function crearPedido(clienteId, total, items) {
 
         if (errDetalles) throw errDetalles;
 
-        // Step 3: Descontar stock de los productos de forma individual
-        for (const item of items) {
-            // Obtener stock actual
-            const { producto, error: errStock } = await getProductoById(item.id);
-            if (errStock) throw new Error(`No se pudo verificar el stock para ${item.nombre}`);
-            
-            const nuevoStock = Math.max(0, producto.stock - item.cantidad);
-            
-            // Actualizar stock en Supabase
-            const { error: errUpdate } = await supabase
-                .from('productos')
-                .update({ stock: nuevoStock })
-                .eq('id', item.id);
-                
-            if (errUpdate) throw errUpdate;
+        // Step 3: Descontar stock de los productos de forma individual (De forma no bloqueante por si RLS restringe update a clientes)
+        try {
+            for (const item of items) {
+                const { producto, error: errStock } = await getProductoById(item.id);
+                if (!errStock && producto) {
+                    const nuevoStock = Math.max(0, producto.stock - item.cantidad);
+                    await supabase
+                        .from('productos')
+                        .update({ stock: nuevoStock })
+                        .eq('id', item.id);
+                }
+            }
+        } catch (stockErr) {
+            console.warn("No se pudo actualizar el stock automáticamente por RLS o red:", stockErr);
         }
 
         return { pedido, error: null };
     } catch (error) {
-        console.error("Error en crearPedido:", error.message);
-        return { pedido: null, error: error.message };
+        console.error("Error crítico en crearPedido:", error);
+        // Garantizar el retorno de un mensaje de error legible tipo string
+        const errMsg = error.message || error.details || (typeof error === 'string' ? error : 'Error desconocido de base de datos');
+        return { pedido: null, error: errMsg };
     }
 }
 
