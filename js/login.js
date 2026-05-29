@@ -16,6 +16,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginForm = document.getElementById('login-form');
     loginForm.addEventListener('submit', handleLoginSubmit);
 
+    // Manejar la visibilidad de la contraseña (alternar text/password)
+    const togglePasswordBtn = document.getElementById('toggle-password');
+    const passwordInput = document.getElementById('login-password');
+
+    if (togglePasswordBtn && passwordInput) {
+        togglePasswordBtn.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Alternar icono de Lucide
+            const icon = togglePasswordBtn.querySelector('i');
+            if (type === 'text') {
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        });
+    }
+
     // Inicializar iconos Lucide
     if (window.lucide) {
         window.lucide.createIcons();
