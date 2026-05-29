@@ -24,6 +24,8 @@ export function showToast(mensaje, tipo = 'success') {
         <span class="toast-text">${mensaje}</span>
     `;
 
+    // Limpiar notificaciones previas para evitar acumulaciones molestas e invasivas
+    container.innerHTML = '';
     container.appendChild(toast);
     
     // Refrescar iconos de Lucide cargados
@@ -57,9 +59,9 @@ export function renderProductCard(producto, onAddToCart) {
 
     let badgeHTML = '';
     if (isOutOfStock) {
-        badgeHTML = `<span class="stock-badge critico product-card-badge" style="background: rgba(255, 59, 48, 0.14); color: #ff3b30; border: 1px solid #ff3b30; font-weight: 700; font-size: 0.75rem;">Agotado</span>`;
+        badgeHTML = `<span class="stock-badge critico product-card-badge">Agotado</span>`;
     } else if (isLowStock) {
-        badgeHTML = `<span class="stock-badge critico product-card-badge" style="background: rgba(255, 59, 48, 0.14); color: #ff3b30; border: 1px solid #ff3b30; font-weight: 700; font-size: 0.75rem;">Pocas Unidades</span>`;
+        badgeHTML = `<span class="stock-badge critico product-card-badge">Pocas Unidades</span>`;
     }
 
     const buttonStyle = isOutOfStock 
