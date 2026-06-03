@@ -652,9 +652,17 @@ button, input, select, textarea {
     gap: 2rem;
 }
 
+@media (min-width: 768px) {
+    .catalog-layout {
+        grid-template-columns: 1fr 280px; /* Catálogo | Carrito Fijo */
+        gap: 1.5rem;
+    }
+}
+
 @media (min-width: 1024px) {
     .catalog-layout {
-        grid-template-columns: 3fr 1fr; /* Catálogo | Carrito */
+        grid-template-columns: 1fr 320px; /* Carrito un poco más ancho en pantallas grandes */
+        gap: 2rem;
     }
 }
 
