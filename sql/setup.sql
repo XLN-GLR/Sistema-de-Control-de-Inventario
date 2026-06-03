@@ -57,7 +57,7 @@ alter table public.pedidos enable row level security;
 create table public.detalles_pedido (
     id uuid default gen_random_uuid() primary key,
     pedido_id uuid references public.pedidos(id) on delete cascade not null,
-    producto_id uuid references public.productos(id) on delete restrict not null,
+    producto_id uuid references public.productos(id) on delete set null,
     cantidad integer not null check (cantidad > 0),
     precio_unitario numeric(10, 2) not null check (precio_unitario >= 0)
 );
