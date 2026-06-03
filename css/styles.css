@@ -238,6 +238,12 @@ button, input, select, textarea {
     text-decoration: none;
 }
 
+.btn svg, .btn i {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
 .btn-primary {
     background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
     color: white;
@@ -274,6 +280,12 @@ button, input, select, textarea {
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
     border-radius: 6px;
+    gap: 0.35rem; /* Separación más compacta para botones pequeños */
+}
+
+.btn-sm svg, .btn-sm i {
+    width: 14px;
+    height: 14px;
 }
 
 /* Tarjetas Premium (Glassmorphism) */
@@ -677,7 +689,7 @@ button, input, select, textarea {
 
 .catalog-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 1.25rem;
 }
 
@@ -687,6 +699,7 @@ button, input, select, textarea {
     flex-direction: column;
     overflow: hidden;
     height: 100%;
+    padding: 0; /* Asegura anulación de padding heredado de .card */
 }
 
 .product-card-img-container {
@@ -718,7 +731,7 @@ button, input, select, textarea {
 }
 
 .product-card-body {
-    padding: 1.15rem; /* Ajuste sutil del padding para maximizar el espacio de los botones */
+    padding: 1rem 0.9rem; /* Un poco menos de espacio lateral (0.9rem) para maximizar espacio interior */
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -747,18 +760,24 @@ button, input, select, textarea {
     margin-top: auto;
     padding-top: 0.75rem;
     border-top: 1px solid rgba(255, 255, 255, 0.04);
-    gap: 0.75rem; /* Espaciado ajustado para evitar que empuje el botón fuera del borde */
+    gap: 0.4rem; /* Gap reducido sutilmente para evitar colisiones */
 }
 
 .product-card-footer .btn {
-    flex-shrink: 0; /* Previene que el botón se contraiga */
-    padding: 0.45rem 0.85rem; /* Padding más compacto en catálogo para un ajuste perfecto al recuadro */
-    font-size: 0.85rem;
-    border-radius: 8px; /* Bordes adaptados con elegancia */
+    flex-shrink: 0;
+    padding: 0.4rem 0.65rem; /* Padding más compacto para un ajuste perfecto */
+    font-size: 0.8rem; /* Fuente ajustada a 0.8rem */
+    border-radius: 8px;
+    gap: 0.35rem; /* Gap compacto de icono/texto dentro del botón */
+}
+
+.product-card-footer .btn svg, .product-card-footer .btn i {
+    width: 14px; /* Icono del carrito más discreto y elegante */
+    height: 14px;
 }
 
 .product-card-price {
-    font-size: 1.25rem;
+    font-size: 1.15rem; /* Ajustado de 1.25rem para evitar colisiones con el botón */
     font-weight: 700;
     color: var(--text-primary);
 }

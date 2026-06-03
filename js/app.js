@@ -2,8 +2,8 @@
    LÓGICA PRINCIPAL DE LA APLICACIÓN (SPA CONTROLLER)
    ==================================================================== */
 
-import * as api from './supabase-api.js?v=1.0.8';
-import * as ui from './components.js?v=1.0.8';
+import * as api from './supabase-api.js?v=1.1.0';
+import * as ui from './components.js?v=1.1.0';
 
 // Estado global de la aplicación (State Management)
 const AppState = {
