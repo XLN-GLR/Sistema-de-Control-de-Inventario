@@ -201,12 +201,16 @@ export async function updateProducto(id, campos) {
  */
 export async function deleteProducto(id) {
     try {
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('productos')
             .delete()
-            .eq('id', id);
+            .eq('id', id)
+            .select();
 
         if (error) throw error;
+        if (!data || data.length === 0) {
+            throw new Error("No se pudo eliminar el producto en el servidor. Verifica tus permisos RLS de Administrador.");
+        }
         return { error: null };
     } catch (error) {
         console.error("Error en deleteProducto:", error.message);
@@ -378,12 +382,16 @@ export async function updateEstadoPedido(pedidoId, nuevoEstado) {
  */
 export async function deletePedido(pedidoId) {
     try {
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('pedidos')
             .delete()
-            .eq('id', pedidoId);
+            .eq('id', pedidoId)
+            .select();
 
         if (error) throw error;
+        if (!data || data.length === 0) {
+            throw new Error("No se pudo eliminar el pedido en el servidor. Verifica tus permisos RLS de Administrador.");
+        }
         return { error: null };
     } catch (error) {
         console.error("Error en deletePedido:", error.message);
