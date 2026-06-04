@@ -80,6 +80,17 @@ begin
 end;
 $$ language plpgsql security definer;
 
+-- Función para verificar si un correo electrónico ya está registrado en auth.users
+create or replace function public.existe_correo(email_to_check text)
+returns boolean as $$
+begin
+    return exists (
+        select 1 from auth.users
+        where email = email_to_check
+    );
+end;
+$$ language plpgsql security definer;
+
 -- Función trigger para registrar automáticamente el perfil cuando se crea un usuario en auth.users
 create or replace function public.handle_new_user()
 returns trigger as $$

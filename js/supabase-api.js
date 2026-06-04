@@ -19,6 +19,19 @@ export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON
  */
 export async function signUp(email, password, nombre) {
     try {
+        // 1. Verificar si el correo ya existe en auth.users a través del RPC de base de datos
+        try {
+            const { data: existe, error: errExiste } = await supabase
+                .rpc('existe_correo', { email_to_check: email });
+
+            if (!errExiste && existe) {
+                throw new Error("El correo electrónico ya se encuentra registrado.");
+            }
+        } catch (rpcErr) {
+            console.warn("RPC existe_correo no disponible o falló:", rpcErr);
+        }
+
+        // 2. Proceder con el registro normal si el correo no existe
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
@@ -31,7 +44,7 @@ export async function signUp(email, password, nombre) {
 
         if (error) throw error;
 
-        // Comprobación de Supabase para detectar si el correo ya existe (debido a la protección contra enumeración de usuarios)
+        // Respaldo de comprobación local por si el RPC no se ejecutó
         if (data.user && data.user.identities && data.user.identities.length === 0) {
             throw new Error("El correo electrónico ya se encuentra registrado.");
         }
