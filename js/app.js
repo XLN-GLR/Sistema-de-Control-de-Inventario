@@ -12,7 +12,8 @@ const AppState = {
     productos: [],      // Catálogo completo de productos cargado
     carrito: [],        // Elementos en el carrito de compras del cliente
     pedidos: [],        // Pedidos cargados de la base de datos
-    currentView: 'catalog' // Vista actual en la SPA
+    currentView: 'catalog', // Vista actual en la SPA
+    welcomeShown: false // Bandera para evitar repetir la notificación de bienvenida
 };
 
 // ====================================================================
@@ -33,15 +34,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sessionUser = await api.getCurrentUser();
     if (sessionUser) {
         AppState.user = sessionUser;
-        const { profile } = await api.getUserProfile(sessionUser.id);
-        if (profile) {
-            AppState.profile = profile;
-        } else {
-            AppState.profile = {
-                rol: sessionUser.email === 'bjacnier28giler@gmail.com' ? 'admin' : 'cliente',
-                nombre: sessionUser.user_metadata?.nombre || 'Usuario'
-            };
-        }
+        AppState.profile = await checkAndSyncProfile(sessionUser);
+        
         // Renderizar barra de navegación con perfil y enrutar correspondientemente
         renderNavbar();
         if (AppState.profile?.rol === 'admin') {
@@ -60,25 +54,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("Cambio de estado Auth en la SPA:", event);
         if (session && session.user) {
             AppState.user = session.user;
+            AppState.profile = await checkAndSyncProfile(session.user);
             
-            // Cargar el perfil para determinar el rol
-            const { profile, error } = await api.getUserProfile(session.user.id);
-            if (!error && profile) {
-                AppState.profile = profile;
-                
-                // Forzar el rol de administrador para el correo específico indicado por el usuario
-                if (session.user.email === 'bjacnier28giler@gmail.com' && profile.rol !== 'admin') {
-                    await api.updateProfile(profile.id, { rol: 'admin' });
-                    AppState.profile.rol = 'admin';
-                }
-            } else {
-                AppState.profile = {
-                    rol: session.user.email === 'bjacnier28giler@gmail.com' ? 'admin' : 'cliente',
-                    nombre: session.user.user_metadata?.nombre || 'Usuario'
-                };
+            if (!AppState.welcomeShown) {
+                ui.showToast(`¡Bienvenido de nuevo, ${AppState.profile.nombre}!`, 'success');
+                AppState.welcomeShown = true;
             }
-            
-            ui.showToast(`¡Bienvenido de nuevo, ${AppState.profile.nombre}!`, 'success');
             
             renderNavbar();
             if (AppState.profile?.rol === 'admin') {
@@ -92,6 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             AppState.profile = null;
             AppState.carrito = [];
             AppState.pedidos = [];
+            AppState.welcomeShown = false;
             actualizarContadorCarrito();
             renderNavbar();
             switchView('catalog');
@@ -131,6 +113,7 @@ function setupEventListeners() {
             AppState.profile = null;
             AppState.carrito = [];
             AppState.pedidos = [];
+            AppState.welcomeShown = false;
 
             // 3. Limpiar storages de inmediato
             try {
@@ -212,6 +195,38 @@ function setupEventListeners() {
 
     // Filtro de Historial de Pedidos
     document.getElementById('order-status-filter').addEventListener('change', filtrarPedidos);
+}
+
+/**
+ * Verifica y sincroniza el perfil del usuario autenticado en la base de datos.
+ */
+async function checkAndSyncProfile(user) {
+    if (!user) return null;
+    let { profile, error } = await api.getUserProfile(user.id);
+    if (!profile) {
+        // El perfil no existe en la base de datos (ej. si se creó por fuera o si se resetearon las tablas)
+        const nombreDefault = user.user_metadata?.nombre || user.email.split('@')[0];
+        const rolDefault = user.email === 'bjacnier28giler@gmail.com' ? 'admin' : 'cliente';
+        const createRes = await api.createProfile(user.id, user.email, nombreDefault, rolDefault);
+        if (!createRes.error && createRes.profile) {
+            profile = createRes.profile;
+        }
+    }
+    
+    if (profile) {
+        // Forzar el rol de administrador para el correo específico indicado por el usuario
+        if (user.email === 'bjacnier28giler@gmail.com' && profile.rol !== 'admin') {
+            await api.updateProfile(profile.id, { rol: 'admin' });
+            profile.rol = 'admin';
+        }
+    } else {
+        // Fallback local en caso de error extremo de red/permisos
+        profile = {
+            rol: user.email === 'bjacnier28giler@gmail.com' ? 'admin' : 'cliente',
+            nombre: user.user_metadata?.nombre || 'Usuario'
+        };
+    }
+    return profile;
 }
 
 /**

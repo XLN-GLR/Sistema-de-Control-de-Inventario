@@ -115,6 +115,24 @@ export async function updateProfile(userId, campos) {
         return { data: null, error: error.message };
     }
 }
+
+/**
+ * Crea un perfil de usuario en la tabla public.profiles.
+ */
+export async function createProfile(userId, email, nombre, rol = 'cliente') {
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .insert([{ id: userId, email, nombre, rol }])
+            .select();
+
+        if (error) throw error;
+        return { profile: data[0], error: null };
+    } catch (error) {
+        console.error("Error en createProfile:", error.message);
+        return { profile: null, error: error.message };
+    }
+}
 /**
  * ====================================================================
  * SECCIÓN 2: SERVICIOS DE INVENTARIO (CRUD PRODUCTOS)
@@ -382,6 +400,15 @@ export async function updateEstadoPedido(pedidoId, nuevoEstado) {
  */
 export async function deletePedido(pedidoId) {
     try {
+        // Primero eliminar de forma explícita los detalles del pedido asociados
+        const { error: errDetalles } = await supabase
+            .from('detalles_pedido')
+            .delete()
+            .eq('pedido_id', pedidoId);
+
+        if (errDetalles) throw errDetalles;
+
+        // Luego eliminar el pedido principal
         const { data, error } = await supabase
             .from('pedidos')
             .delete()

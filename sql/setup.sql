@@ -120,6 +120,12 @@ create policy "Usuarios pueden actualizar su propio perfil"
     to authenticated
     using (auth.uid() = id or public.es_admin());
 
+-- Permitir que los usuarios inserten su propio perfil
+create policy "Usuarios pueden crear su propio perfil"
+    on public.profiles for insert
+    to authenticated
+    with check (auth.uid() = id);
+
 -- --- POLÍTICAS PARA PRODUCTOS ---
 -- Permitir lectura pública de productos (para que visitantes y clientes vean el catálogo)
 create policy "Cualquiera puede ver productos"
