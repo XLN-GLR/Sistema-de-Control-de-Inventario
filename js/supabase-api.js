@@ -30,6 +30,12 @@ export async function signUp(email, password, nombre) {
         });
 
         if (error) throw error;
+
+        // Comprobación de Supabase para detectar si el correo ya existe (debido a la protección contra enumeración de usuarios)
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+            throw new Error("El correo electrónico ya se encuentra registrado.");
+        }
+
         return { data, error: null };
     } catch (error) {
         console.error("Error en signUp:", error.message);
