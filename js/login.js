@@ -2,8 +2,8 @@
    CONTROLADOR DE AUTENTICACIÓN: LOGIN INDEPENDIENTE
    ==================================================================== */
 
-import * as api from './supabase-api.js?v=1.1.1';
-import { showToast } from './components.js?v=1.1.1';
+import * as api from './supabase-api.js?v=1.1.2';
+import { showToast } from './components.js?v=1.1.2';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Si el usuario ya está autenticado, redirigir directamente a la página principal
