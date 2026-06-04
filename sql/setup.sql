@@ -193,6 +193,12 @@ create policy "Usuarios pueden agregar detalles a su pedido"
         )
     );
 
+-- Permitir la eliminación de detalles de pedido SOLO a administradores (requerido para borrado en cascada)
+create policy "Solo administradores pueden eliminar detalles_pedido"
+    on public.detalles_pedido for delete
+    to authenticated
+    using (public.es_admin());
+
 -- ====================================================================
 -- DATOS INICIALES DE PRUEBA (PRODUCTOS DE ABARROTES)
 -- ====================================================================
